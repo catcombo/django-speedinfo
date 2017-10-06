@@ -1,0 +1,14 @@
+.object-tools a.turned-on,
+.object-tools a.turned-off {
+    padding-right: 26px;
+    background-repeat: no-repeat;
+    background-position: right 7px center;
+}
+
+.object-tools a.turned-on {
+    background-image: url('../img/icon-turned-on.svg');
+}
+
+.object-tools a.turned-off {
+    background-image: url('../img/icon-turned-off.svg');
+}
