@@ -8,6 +8,10 @@ SpeedInfo counts number of calls, cache hits, authorized calls, average and
 total call time and more for each of your views. Detailed report and
 profiler controls are available in Django admin.
 
+.. image:: screenshots/main.png
+    :width: 80%
+    :align: center
+
 
 Requirements
 ============
@@ -29,7 +33,8 @@ Installation
     ]
 
 4. Run ``python manage.py migrate``.
-5. Setup any cache backend, except local-memory and dummy caching. Profiler uses the cache to store its state.
+5. Run ``python manage.py collectstatic``.
+6. Setup any cache backend, except local-memory and dummy caching. Profiler uses the cache to store its state.
 
 
 Usage
