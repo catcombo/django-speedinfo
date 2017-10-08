@@ -8,6 +8,9 @@
         </a>
     </li>
     <li>
+        <a href="{% url "admin:speedinfo-profiler-export" %}">Export .CSV</a>
+    </li>
+    <li>
         <a href="{% url "admin:speedinfo-profiler-reset" %}" onclick="return confirm('Are you sure?')">Reset</a>
     </li>
 {% endblock %}

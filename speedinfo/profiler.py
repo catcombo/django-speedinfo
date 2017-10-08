@@ -1,5 +1,8 @@
 # coding: utf-8
 
+import csv
+
+from StringIO import StringIO
 from django.core.cache import cache
 
 
@@ -53,6 +56,27 @@ class Profiler(object):
             total_calls=F('total_calls') + 1,
             total_time=F('total_time') + duration
         )
+
+    def export(self):
+        """Exports profiling data as a comma-separated file-like object.
+
+        :return: comma-separated profiling data
+        :rtype: :class:`StringIO`
+        """
+        from speedinfo.models import ViewProfiler
+
+        output = StringIO()
+        csv_writer = csv.writer(output)
+        csv_writer.writerow(['View name', 'HTTP method', 'Anonymous calls', 'Cache hits',
+                             'Total calls', 'Time per call', 'Total time'])
+
+        for vp in ViewProfiler.objects.order_by('-total_time'):
+            csv_writer.writerow([
+                vp.view_name, vp.method, '{:.1f}%'.format(vp.anon_calls_ratio), '{:.1f}%'.format(vp.cache_hits_ratio),
+                vp.total_calls, vp.time_per_call, vp.total_time
+            ])
+
+        return output
 
     def flush(self):
         """Deletes all profiling data"""
