@@ -3,6 +3,7 @@
 import re
 
 from time import time
+from django.db import connection
 from django.urls import resolve, Resolver404
 from speedinfo import profiler, settings
 
@@ -52,10 +53,21 @@ class ProfilerMiddleware(object):
         if not profiler.is_on or self.match_exclude_urls(request.path):
             return self.get_response(request)
 
-        # Measures response time
+        # Force DB connection to debug mode to get sql time and number of queries
+        force_debug_cursor = connection.force_debug_cursor
+        connection.force_debug_cursor = True
+
         start_time = time()
         response = self.get_response(request)
         duration = time() - start_time
+
+        connection.force_debug_cursor = force_debug_cursor
+
+        # Get SQL queries count and execution time
+        sql_time = 0
+        sql_count = len(connection.queries)
+        for query in connection.queries:
+            sql_time += float(query.get('time', 0))
 
         # Collects request and response params
         view_name = self.get_view_name(request)
@@ -64,6 +76,6 @@ class ProfilerMiddleware(object):
 
         # Saves profiler data
         if view_name is not None:
-            profiler.process(view_name, request.method, is_anon_call, is_cache_hit, duration)
+            profiler.process(view_name, request.method, is_anon_call, is_cache_hit, sql_time, sql_count, duration)
 
         return response

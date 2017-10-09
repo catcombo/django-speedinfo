@@ -12,8 +12,8 @@ from speedinfo.models import ViewProfiler
 
 
 class ViewProfilerAdmin(admin.ModelAdmin):
-    list_display = ('view_name', 'method', 'anon_calls_ratio', 'cache_hits_ratio',
-                    'total_calls', 'time_per_call', 'total_time')
+    list_display = ('view_name', 'method', 'total_calls', 'anon_calls_ratio', 'cache_hits_ratio',
+                    'sql_count_per_call', 'sql_time_ratio', 'time_per_call', 'total_time')
     list_display_links = None
     actions = None
     ordering = ('-total_time',)
@@ -36,6 +36,14 @@ class ViewProfilerAdmin(admin.ModelAdmin):
     def cache_hits_ratio(self, obj):
         return '{:.1f} %'.format(obj.cache_hits_ratio)
     cache_hits_ratio.short_description = 'Cache hits'
+
+    def sql_count_per_call(self, obj):
+        return obj.sql_count_per_call
+    sql_count_per_call.short_description = 'SQL queries per call'
+
+    def sql_time_ratio(self, obj):
+        return '{:.1f} %'.format(obj.sql_time_ratio)
+    sql_time_ratio.short_description = 'SQL time'
 
     def time_per_call(self, obj):
         return obj.time_per_call

@@ -135,15 +135,18 @@ class ProfilerTest(TestCase):
         self.client.get(self.cached_func_view_url)
 
         vp = ViewProfiler.objects.first()
+        vp.sql_total_time = 1
+        vp.sql_total_count = 6
         vp.total_time = 2
         vp.total_calls = 2
         vp.save()
 
         output = profiler.export()
         results = list(csv.reader(output.getvalue().splitlines()))
-        self.assertEqual(results[0], ['View name', 'HTTP method', 'Anonymous calls', 'Cache hits',
-                                      'Total calls', 'Time per call', 'Total time'])
-        self.assertEqual(results[1], ['tests.views.cached_func_view', 'GET', '100.0%', '50.0%', '2', '1.0', '2.0'])
+        self.assertEqual(results[0], ['View name', 'HTTP method', 'Total calls', 'Anonymous calls', 'Cache hits',
+                                      'SQL queries per call', 'SQL time', 'Time per call', 'Total time'])
+        self.assertEqual(results[1], ['tests.views.cached_func_view', 'GET', '2', '100.0%', '50.0%',
+                                      '3', '50.0%', '1.0', '2.0'])
 
     def test_flush(self):
         self.client.get(self.class_view_url)
