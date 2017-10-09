@@ -12,8 +12,8 @@ from speedinfo.models import ViewProfiler
 
 
 class ViewProfilerAdmin(admin.ModelAdmin):
-    list_display = ('view_name', 'method', 'total_calls', 'anon_calls_ratio', 'cache_hits_ratio',
-                    'sql_count_per_call', 'sql_time_ratio', 'time_per_call', 'total_time')
+    list_display = ('view_name', 'method', 'anon_calls_ratio', 'cache_hits_ratio',
+                    'sql_count_per_call', 'sql_time_ratio', 'total_calls', 'time_per_call', 'total_time')
     list_display_links = None
     actions = None
     ordering = ('-total_time',)

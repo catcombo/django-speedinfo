@@ -71,15 +71,15 @@ class Profiler(object):
 
         output = StringIO()
         csv_writer = csv.writer(output)
-        csv_writer.writerow(['View name', 'HTTP method', 'Total calls', 'Anonymous calls', 'Cache hits',
-                             'SQL queries per call', 'SQL time', 'Time per call', 'Total time'])
+        csv_writer.writerow(['View name', 'HTTP method', 'Anonymous calls', 'Cache hits',
+                             'SQL queries per call', 'SQL time', 'Total calls', 'Time per call', 'Total time'])
 
         for vp in ViewProfiler.objects.order_by('-total_time'):
             csv_writer.writerow([
-                vp.view_name, vp.method, vp.total_calls,
+                vp.view_name, vp.method,
                 '{:.1f}%'.format(vp.anon_calls_ratio), '{:.1f}%'.format(vp.cache_hits_ratio),
                 vp.sql_count_per_call, '{:.1f}%'.format(vp.sql_time_ratio),
-                vp.time_per_call, vp.total_time
+                vp.total_calls, vp.time_per_call, vp.total_time
             ])
 
         return output

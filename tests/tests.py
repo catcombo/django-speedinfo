@@ -143,10 +143,10 @@ class ProfilerTest(TestCase):
 
         output = profiler.export()
         results = list(csv.reader(output.getvalue().splitlines()))
-        self.assertEqual(results[0], ['View name', 'HTTP method', 'Total calls', 'Anonymous calls', 'Cache hits',
-                                      'SQL queries per call', 'SQL time', 'Time per call', 'Total time'])
-        self.assertEqual(results[1], ['tests.views.cached_func_view', 'GET', '2', '100.0%', '50.0%',
-                                      '3', '50.0%', '1.0', '2.0'])
+        self.assertEqual(results[0], ['View name', 'HTTP method', 'Anonymous calls', 'Cache hits',
+                                      'SQL queries per call', 'SQL time', 'Total calls', 'Time per call', 'Total time'])
+        self.assertEqual(results[1], ['tests.views.cached_func_view', 'GET', '100.0%', '50.0%',
+                                      '3', '50.0%', '2', '1.0', '2.0'])
 
     def test_flush(self):
         self.client.get(self.class_view_url)
