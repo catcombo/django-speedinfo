@@ -1,5 +1,7 @@
 # coding: utf-8
 
+import csv
+
 from time import sleep
 
 from django.contrib.auth.models import User
@@ -128,6 +130,24 @@ class ProfilerTest(TestCase):
         data = ViewProfiler.objects.first()
         self.assertEqual(data.cache_hits, 1)
 
+    def test_export(self):
+        self.client.get(self.cached_func_view_url)
+        self.client.get(self.cached_func_view_url)
+
+        vp = ViewProfiler.objects.first()
+        vp.sql_total_time = 1
+        vp.sql_total_count = 6
+        vp.total_time = 2
+        vp.total_calls = 2
+        vp.save()
+
+        output = profiler.export()
+        results = list(csv.reader(output.getvalue().splitlines()))
+        self.assertEqual(results[0], ['View name', 'HTTP method', 'Anonymous calls', 'Cache hits',
+                                      'SQL queries per call', 'SQL time', 'Total calls', 'Time per call', 'Total time'])
+        self.assertEqual(results[1], ['tests.views.cached_func_view', 'GET', '100.0%', '50.0%',
+                                      '3', '50.0%', '2', '1.0', '2.0'])
+
     def test_flush(self):
         self.client.get(self.class_view_url)
         self.client.get(self.func_view_url)
@@ -163,6 +183,12 @@ class ProfilerAdminTest(TestCase):
         self.assertTrue(profiler.is_on)
         self.client.get(reverse('admin:speedinfo-profiler-switch'))
         self.assertFalse(profiler.is_on)
+
+    def test_export_url(self):
+        self.client.get(reverse('class-view'))
+        response = self.client.get(reverse('admin:speedinfo-profiler-export'))
+        self.assertEquals(response.get('Content-Disposition'), 'attachment; filename=profiler.csv')
+        self.assertEqual(response.content, profiler.export().getvalue())
 
     def test_flush_url(self):
         profiler.is_on = True
