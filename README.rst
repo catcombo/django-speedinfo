@@ -4,9 +4,11 @@ django-speedinfo
 
 SpeedInfo is a live profiling tool for the Django framework to find
 most highload views in your project for the next optimization.
-SpeedInfo counts number of calls, cache hits, authorized calls, average and
-total call time and more for each of your views. Detailed report and
-profiler controls are available in Django admin.
+SpeedInfo counts number of calls, cache hits, SQL queries,
+measures average and total call time and more for each of your views.
+Detailed report and profiler controls are available in Django admin.
+
+Production ready. Real projects tested.
 
 .. image:: screenshots/main.png
     :width: 80%
