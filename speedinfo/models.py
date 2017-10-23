@@ -18,6 +18,7 @@ class ViewProfiler(models.Model):
 
     class Meta:
         verbose_name_plural = 'Views profiler'
+        unique_together = ('view_name', 'method')
 
     @property
     def anon_calls_ratio(self):
