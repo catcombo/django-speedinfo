@@ -4,6 +4,7 @@ import csv
 
 from StringIO import StringIO
 from django.core.cache import cache
+from django.db import IntegrityError
 
 
 class Profiler(object):
@@ -47,10 +48,12 @@ class Profiler(object):
         from django.db.models import F
         from speedinfo.models import ViewProfiler
 
-        vp, created = ViewProfiler.objects.get_or_create(
-            view_name=view_name,
-            method=method
-        )
+        try:
+            vp, created = ViewProfiler.objects.get_or_create(view_name=view_name, method=method)
+        except IntegrityError:
+            # IntegrityError exception raised in case of concurrent access
+            # to get_or_create method from another webserver worker process
+            vp = ViewProfiler.objects.get(view_name=view_name, method=method)
 
         ViewProfiler.objects.filter(pk=vp.pk).update(
             anon_calls=F('anon_calls') + (is_anon_call and 1 or 0),
