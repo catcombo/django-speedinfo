@@ -7,13 +7,12 @@ from django.db.models import F, FloatField, ExpressionWrapper
 from django.http import HttpResponseRedirect, HttpResponse
 from django.urls import reverse
 
-from speedinfo import profiler
+from speedinfo import profiler, settings
 from speedinfo.models import ViewProfiler
 
 
 class ViewProfilerAdmin(admin.ModelAdmin):
-    list_display = ('view_name', 'method', 'anon_calls_ratio', 'cache_hits_ratio',
-                    'sql_count_per_call', 'sql_time_ratio', 'total_calls', 'time_per_call', 'total_time')
+    list_display = settings.SPEEDINFO_REPORT_COLUMNS
     list_display_links = None
     actions = None
     ordering = ('-total_time',)

@@ -10,6 +10,7 @@ from django.test import TestCase
 from django.urls import reverse
 
 from speedinfo import profiler, settings
+from speedinfo.admin import ViewProfilerAdmin
 from speedinfo.models import ViewProfiler
 
 
@@ -131,22 +132,31 @@ class ProfilerTest(TestCase):
         self.assertEqual(data.cache_hits, 1)
 
     def test_export(self):
-        self.client.get(self.cached_func_view_url)
-        self.client.get(self.cached_func_view_url)
+        ViewProfiler.objects.create(
+            view_name='app.view_name',
+            method='GET',
+            anon_calls=2,
+            cache_hits=1,
+            sql_total_time=1,
+            sql_total_count=6,
+            total_time=2,
+            total_calls=2
+        )
 
-        vp = ViewProfiler.objects.first()
-        vp.sql_total_time = 1
-        vp.sql_total_count = 6
-        vp.total_time = 2
-        vp.total_calls = 2
-        vp.save()
-
+        # Default export
         output = profiler.export()
         results = list(csv.reader(output.getvalue().splitlines()))
         self.assertEqual(results[0], ['View name', 'HTTP method', 'Anonymous calls', 'Cache hits',
                                       'SQL queries per call', 'SQL time', 'Total calls', 'Time per call', 'Total time'])
-        self.assertEqual(results[1], ['tests.views.cached_func_view', 'GET', '100.0%', '50.0%',
+        self.assertEqual(results[1], ['app.view_name', 'GET', '100.0%', '50.0%',
                                       '3', '50.0%', '2', '1.0', '2.0'])
+
+        # Export with custom columns
+        settings.SPEEDINFO_REPORT_COLUMNS = ('view_name', 'method', 'total_calls', 'time_per_call', 'total_time')
+        output = profiler.export()
+        results = list(csv.reader(output.getvalue().splitlines()))
+        self.assertEqual(results[0], ['View name', 'HTTP method', 'Total calls', 'Time per call', 'Total time'])
+        self.assertEqual(results[1], ['app.view_name', 'GET', '2', '1.0', '2.0'])
 
     def test_flush(self):
         self.client.get(self.class_view_url)
@@ -217,3 +227,4 @@ class ProfilerAdminTest(TestCase):
         response = self.client.get(reverse('admin:speedinfo_viewprofiler_changelist'))
         self.assertEqual(response.status_code, 200)
         self.assertTrue('profiler_is_on' in response.context)
+        self.assertEqual(ViewProfilerAdmin.list_display, settings.SPEEDINFO_REPORT_COLUMNS)
