@@ -30,6 +30,8 @@ MIDDLEWARE = [
     'speedinfo.middleware.ProfilerMiddleware',
 ]
 
+MIDDLEWARE_CLASSES = MIDDLEWARE
+
 ROOT_URLCONF = 'tests.urls'
 
 TEMPLATES = [
