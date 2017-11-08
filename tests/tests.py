@@ -86,8 +86,8 @@ class ProfilerTest(TestCase):
         self.assertEqual(data.total_calls, 1)
 
         # Authenticated user
-        user = User.objects.create(username='user')
-        self.client.force_login(user)
+        User.objects.create_user(username='user', password='123456')
+        self.client.login(username='user', password='123456')
         self.client.get(self.func_view_url)
 
         data.refresh_from_db()
@@ -187,8 +187,8 @@ class ProfilerAdminTest(TestCase):
     def setUp(self):
         cache.clear()
         settings.SPEEDINFO_EXCLUDE_URLS = []
-        admin = User.objects.create_superuser(username='admin', email='', password='123456')
-        self.client.force_login(admin)
+        User.objects.create_superuser(username='admin', email='', password='123456')
+        self.client.login(username='admin', password='123456')
 
     def test_switch_url(self):
         self.assertFalse(profiler.is_on)

@@ -18,7 +18,7 @@ env:
 
 install:
   - pip install -q Django==$DJANGO_VERSION
-  - pip install mysql-python
+  - pip install mysqlclient
 
 script:
   - python manage.py test

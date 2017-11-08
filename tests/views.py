@@ -3,7 +3,7 @@
 from time import sleep
 
 from django.http import HttpResponse
-from django.views import View
+from django.views.generic import View
 from django.views.decorators.cache import cache_page
 
 from speedinfo.settings import SPEEDINFO_CACHED_RESPONSE_ATTR_NAME
