@@ -7,11 +7,15 @@ from time import sleep
 from django.contrib.auth.models import User
 from django.core.cache import cache
 from django.test import TestCase
-from django.urls import reverse
 
 from speedinfo import profiler, settings
 from speedinfo.admin import ViewProfilerAdmin
 from speedinfo.models import ViewProfiler
+
+try:
+    from django.urls import reverse  # Django >= 1.10
+except ImportError:
+    from django.core.urlresolvers import reverse
 
 
 class ProfilerTest(TestCase):
