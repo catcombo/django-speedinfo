@@ -2,6 +2,10 @@
 django-speedinfo
 ================
 
+.. image:: https://travis-ci.org/catcombo/django-speedinfo.svg?branch=master
+    :alt: Build Status
+    :target: https://travis-ci.org/catcombo/django-speedinfo
+
 SpeedInfo is a live profiling tool for the Django framework to find
 most highload views in your project for the next optimization.
 SpeedInfo counts number of calls, cache hits, SQL queries,
@@ -20,8 +24,7 @@ Installation
 
 1. Run ``pip install django-speedinfo``.
 2. Add ``speedinfo`` to the beginning of the ``INSTALLED_APPS``.
-3. Add ``speedinfo.middleware.ProfilerMiddleware`` to the end of ``MIDDLEWARE`` (or ``MIDDLEWARE_CLASSES`` for Django < 1.10) list,
-but before ``django.middleware.cache.FetchFromCacheMiddleware`` (if used)::
+3. Add ``speedinfo.middleware.ProfilerMiddleware`` to the end of ``MIDDLEWARE`` (or ``MIDDLEWARE_CLASSES`` for Django < 1.10) list, but before ``django.middleware.cache.FetchFromCacheMiddleware`` (if used)::
 
     MIDDLEWARE = [
         ...,
