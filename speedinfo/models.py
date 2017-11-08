@@ -64,7 +64,7 @@ class ViewProfiler(models.Model):
         :rtype: int
         """
         if self.total_calls > 0:
-            return self.sql_total_count / self.total_calls
+            return int(self.sql_total_count / self.total_calls)
         else:
             return 0
 

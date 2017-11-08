@@ -1,6 +1,7 @@
 # coding: utf-8
 
 import csv
+import django
 
 from time import sleep
 
@@ -118,10 +119,15 @@ class ProfilerTest(TestCase):
         self.assertEqual(data.cache_hits, 2)
 
     def test_per_site_cache(self):
-        with self.modify_settings(MIDDLEWARE={
+        if django.VERSION < (1, 10):
+            middleware_settings_name = 'MIDDLEWARE_CLASSES'
+        else:
+            middleware_settings_name = 'MIDDLEWARE'
+
+        with self.modify_settings(**{middleware_settings_name: {
             'append': 'django.middleware.cache.FetchFromCacheMiddleware',
             'prepend': 'django.middleware.cache.UpdateCacheMiddleware',
-        }):
+        }}):
             self.client.get(self.func_view_url)
             data = ViewProfiler.objects.first()
             self.assertEqual(data.cache_hits, 0)
@@ -202,7 +208,7 @@ class ProfilerAdminTest(TestCase):
         self.client.get(reverse('class-view'))
         response = self.client.get(reverse('admin:speedinfo-profiler-export'))
         self.assertEquals(response.get('Content-Disposition'), 'attachment; filename=profiler.csv')
-        self.assertEqual(response.content, profiler.export().getvalue())
+        self.assertEqual(response.content.decode(), profiler.export().getvalue())
 
     def test_flush_url(self):
         profiler.is_on = True

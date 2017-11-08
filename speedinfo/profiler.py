@@ -79,8 +79,8 @@ class Profiler(object):
         from speedinfo.models import ViewProfiler
 
         output = StringIO()
-        export_columns = filter(lambda col: col.attr_name in settings.SPEEDINFO_REPORT_COLUMNS,
-                                settings.SPEEDINFO_REPORT_COLUMNS_FORMAT)
+        export_columns = list(filter(lambda col: col.attr_name in settings.SPEEDINFO_REPORT_COLUMNS,
+                                     settings.SPEEDINFO_REPORT_COLUMNS_FORMAT))
 
         csv_writer = csv.writer(output)
         csv_writer.writerow([col.name for col in export_columns])
