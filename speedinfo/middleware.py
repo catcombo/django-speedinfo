@@ -4,16 +4,23 @@ import re
 
 from time import time
 from django.db import connection
-from django.urls import resolve, Resolver404
 from speedinfo import profiler, settings
+
+try:
+    from django.urls import resolve, Resolver404  # Django >= 1.10
+except ImportError:
+    from django.core.urlresolvers import resolve, Resolver404
 
 
 class ProfilerMiddleware(object):
     """
     Collects request and response statistics and saves profiler data.
+    Unified middleware for all Django versions.
     """
-    def __init__(self, get_response):
+    def __init__(self, get_response=None):
         self.get_response = get_response
+        self.force_debug_cursor = False
+        self.start_time = 0
         self.exclude_urls_re = [re.compile(pattern) for pattern in settings.SPEEDINFO_EXCLUDE_URLS]
 
     def match_exclude_urls(self, path):
@@ -42,26 +49,35 @@ class ProfilerMiddleware(object):
         except Resolver404:
             return None
 
-    def __call__(self, request):
-        """Collects request and response statistics and saves profiler data.
+    def process_view(self, request, *args, **kwargs):
+        """Initialize statistics variables and environment.
+
+        :return: Response object or None
+        :rtype: :class:`django.http.HttpResponse` or None
+        """
+        if not profiler.is_on or self.match_exclude_urls(request.path):
+            return
+
+        # Force DB connection to debug mode to get sql time and number of queries
+        self.force_debug_cursor = connection.force_debug_cursor
+        connection.force_debug_cursor = True
+        self.start_time = time()
+
+    def process_response(self, request, response):
+        """Aggregates request and response statistics and saves it in profiler data.
 
         :param request: Request object
         :type request: :class:`django.http.HttpRequest`
-        :return: view response
-        :rtype: :class:`django.http.HttpResponse`
+        :param response: Response object returned by a Django view or by a middleware
+        :type response: :class:`django.http.HttpResponse` or :class:`django.http.StreamingHttpResponse`
+        :return: View response
+        :rtype: :class:`django.http.HttpResponse` or :class:`django.http.StreamingHttpResponse`
         """
         if not profiler.is_on or self.match_exclude_urls(request.path):
-            return self.get_response(request)
+            return response
 
-        # Force DB connection to debug mode to get sql time and number of queries
-        force_debug_cursor = connection.force_debug_cursor
-        connection.force_debug_cursor = True
-
-        start_time = time()
-        response = self.get_response(request)
-        duration = time() - start_time
-
-        connection.force_debug_cursor = force_debug_cursor
+        duration = time() - self.start_time
+        connection.force_debug_cursor = self.force_debug_cursor
 
         # Get SQL queries count and execution time
         sql_time = 0
@@ -79,3 +95,18 @@ class ProfilerMiddleware(object):
             profiler.process(view_name, request.method, is_anon_call, is_cache_hit, sql_time, sql_count, duration)
 
         return response
+
+    def __call__(self, request):
+        """New middleware handler introduced in Django 1.10.
+
+        :param request: Request object
+        :type request: :class:`django.http.HttpRequest`
+        :return: View response
+        :rtype: :class:`django.http.HttpResponse` or :class:`django.http.StreamingHttpResponse`
+        """
+        response = self.process_view(request)
+
+        if response is None:
+            response = self.get_response(request)
+
+        return self.process_response(request, response)

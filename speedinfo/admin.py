@@ -5,10 +5,14 @@ from django.contrib import admin
 from django.core.exceptions import PermissionDenied
 from django.db.models import F, FloatField, ExpressionWrapper
 from django.http import HttpResponseRedirect, HttpResponse
-from django.urls import reverse
 
 from speedinfo import profiler, settings
 from speedinfo.models import ViewProfiler
+
+try:
+    from django.urls import reverse  # Django >= 1.10
+except ImportError:
+    from django.core.urlresolvers import reverse
 
 
 class ViewProfilerAdmin(admin.ModelAdmin):
