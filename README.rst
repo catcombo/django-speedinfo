@@ -15,18 +15,13 @@ Production ready. Real projects tested.
     :align: center
 
 
-Requirements
-============
-
-``Django`` 1.10 and above.
-
-
 Installation
 ============
 
 1. Run ``pip install django-speedinfo``.
 2. Add ``speedinfo`` to the beginning of the ``INSTALLED_APPS``.
-3. Add ``speedinfo.middleware.ProfilerMiddleware`` to the end of ``MIDDLEWARE`` list, but before ``django.middleware.cache.FetchFromCacheMiddleware`` (if used)::
+3. Add ``speedinfo.middleware.ProfilerMiddleware`` to the end of ``MIDDLEWARE`` (or ``MIDDLEWARE_CLASSES`` for Django < 1.10) list,
+but before ``django.middleware.cache.FetchFromCacheMiddleware`` (if used)::
 
     MIDDLEWARE = [
         ...,
@@ -49,7 +44,7 @@ to control profiler state. Use ``Reset`` button to flush all data.
 Configuration
 =============
 
-To exclude some urls from profiling add it to the SPEEDINFO_EXCLUDE_URLS list.
+To exclude some urls from profiling add it to the ``SPEEDINFO_EXCLUDE_URLS`` list.
 ``SpeedInfo`` uses re.match internally to test requested url. Example::
 
     SPEEDINFO_EXCLUDE_URLS = [
@@ -65,7 +60,7 @@ when retrieving page from cache.
 
 In case you implement your own caching logic and want to mark
 view response as obtained from the cache, set attribute with name taken
-from SPEEDINFO_CACHED_RESPONSE_ATTR_NAME to True to the ``HttpResponse`` object.
+from ``SPEEDINFO_CACHED_RESPONSE_ATTR_NAME`` to True to the ``HttpResponse`` object.
 Example::
 
     from django.views import View
@@ -79,3 +74,10 @@ Example::
             setattr(response, SPEEDINFO_CACHED_RESPONSE_ATTR_NAME, True)
             return response
 
+Change ``SPEEDINFO_REPORT_COLUMNS`` settings to customize Django admin profiler columns.
+Default value::
+
+    SPEEDINFO_REPORT_COLUMNS = (
+        'view_name', 'method', 'anon_calls_ratio', 'cache_hits_ratio',
+        'sql_count_per_call', 'sql_time_ratio', 'total_calls', 'time_per_call', 'total_time'
+    )
