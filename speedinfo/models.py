@@ -27,7 +27,10 @@ class ViewProfiler(models.Model):
         :return: anonymous calls ratio percent
         :rtype: float
         """
-        return 100 * self.anon_calls / float(self.total_calls)
+        if self.total_calls > 0:
+            return 100 * self.anon_calls / float(self.total_calls)
+        else:
+            return 0
 
     @property
     def cache_hits_ratio(self):
@@ -36,7 +39,10 @@ class ViewProfiler(models.Model):
         :return: cache hits ratio percent
         :rtype: float
         """
-        return 100 * self.cache_hits / float(self.total_calls)
+        if self.total_calls > 0:
+            return 100 * self.cache_hits / float(self.total_calls)
+        else:
+            return 0
 
     @property
     def sql_time_ratio(self):
@@ -45,7 +51,10 @@ class ViewProfiler(models.Model):
         :return: SQL time per call ratio percent
         :rtype: float
         """
-        return 100 * self.sql_total_time / float(self.total_time)
+        if self.total_time > 0:
+            return 100 * self.sql_total_time / float(self.total_time)
+        else:
+            return 0
 
     @property
     def sql_count_per_call(self):
@@ -54,7 +63,10 @@ class ViewProfiler(models.Model):
         :return: SQL queries count per call
         :rtype: int
         """
-        return self.sql_total_count / self.total_calls
+        if self.total_calls > 0:
+            return int(self.sql_total_count / self.total_calls)
+        else:
+            return 0
 
     @property
     def time_per_call(self):
@@ -63,4 +75,7 @@ class ViewProfiler(models.Model):
         :return: time per call
         :rtype: float
         """
-        return self.total_time / float(self.total_calls)
+        if self.total_calls > 0:
+            return self.total_time / float(self.total_calls)
+        else:
+            return 0

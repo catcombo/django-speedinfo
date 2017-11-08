@@ -1,0 +1,24 @@
+language: python
+
+python:
+  - "2.7"
+  - "3.6"
+
+services:
+  - mysql
+
+before_install:
+  - mysql -e 'CREATE DATABASE test_db;'
+  - export DJANGO_SETTINGS_MODULE=tests.test_settings
+
+env:
+  - DJANGO_VERSION=1.8.18
+  - DJANGO_VERSION=1.10.8
+  - DJANGO_VERSION=1.11.7
+
+install:
+  - pip install -q Django==$DJANGO_VERSION
+  - pip install mysqlclient
+
+script:
+  - python manage.py test

@@ -1,5 +1,6 @@
 # coding: utf-8
 
+import django
 import os
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
@@ -30,6 +31,9 @@ MIDDLEWARE = [
     'speedinfo.middleware.ProfilerMiddleware',
 ]
 
+if django.VERSION < (1, 10):
+    MIDDLEWARE_CLASSES = MIDDLEWARE
+
 ROOT_URLCONF = 'tests.urls'
 
 TEMPLATES = [
@@ -50,8 +54,11 @@ TEMPLATES = [
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+        'ENGINE': 'django.db.backends.mysql',
+        'NAME': 'test_db',
+        'USER': 'root',
+        'PASSWORD': '',
+        'HOST': '127.0.0.1',
     }
 }
 

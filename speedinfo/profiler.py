@@ -2,8 +2,15 @@
 
 import csv
 
-from StringIO import StringIO
+try:
+    from StringIO import StringIO
+except ImportError:
+    from io import StringIO
+
 from django.core.cache import cache
+from django.db import IntegrityError
+
+from speedinfo import settings
 
 
 class Profiler(object):
@@ -47,10 +54,12 @@ class Profiler(object):
         from django.db.models import F
         from speedinfo.models import ViewProfiler
 
-        vp, created = ViewProfiler.objects.get_or_create(
-            view_name=view_name,
-            method=method
-        )
+        try:
+            vp, created = ViewProfiler.objects.get_or_create(view_name=view_name, method=method)
+        except IntegrityError:
+            # IntegrityError exception raised in case of concurrent access
+            # to get_or_create method from another webserver worker process
+            vp = ViewProfiler.objects.get(view_name=view_name, method=method)
 
         ViewProfiler.objects.filter(pk=vp.pk).update(
             anon_calls=F('anon_calls') + (is_anon_call and 1 or 0),
@@ -70,16 +79,16 @@ class Profiler(object):
         from speedinfo.models import ViewProfiler
 
         output = StringIO()
+        export_columns = list(filter(lambda col: col.attr_name in settings.SPEEDINFO_REPORT_COLUMNS,
+                                     settings.SPEEDINFO_REPORT_COLUMNS_FORMAT))
+
         csv_writer = csv.writer(output)
-        csv_writer.writerow(['View name', 'HTTP method', 'Anonymous calls', 'Cache hits',
-                             'SQL queries per call', 'SQL time', 'Total calls', 'Time per call', 'Total time'])
+        csv_writer.writerow([col.name for col in export_columns])
 
         for vp in ViewProfiler.objects.order_by('-total_time'):
             csv_writer.writerow([
-                vp.view_name, vp.method,
-                '{:.1f}%'.format(vp.anon_calls_ratio), '{:.1f}%'.format(vp.cache_hits_ratio),
-                vp.sql_count_per_call, '{:.1f}%'.format(vp.sql_time_ratio),
-                vp.total_calls, vp.time_per_call, vp.total_time
+                col.format.format(getattr(vp, col.attr_name))
+                for col in export_columns
             ])
 
         return output
