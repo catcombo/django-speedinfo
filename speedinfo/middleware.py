@@ -73,7 +73,7 @@ class ProfilerMiddleware(object):
         :return: View response
         :rtype: :class:`django.http.HttpResponse` or :class:`django.http.StreamingHttpResponse`
         """
-        if not profiler.is_on or self.match_exclude_urls(request.path):
+        if not profiler.is_on or self.match_exclude_urls(request.path) or not hasattr(request, 'user'):
             return response
 
         duration = time() - self.start_time
