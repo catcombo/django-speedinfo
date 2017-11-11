@@ -12,8 +12,6 @@ SpeedInfo counts number of calls, cache hits, SQL queries,
 measures average and total call time and more for each of your views.
 Detailed report and profiler controls are available in Django admin.
 
-Production ready. Real projects tested.
-
 .. image:: screenshots/main.png
     :width: 80%
     :align: center
@@ -23,7 +21,7 @@ Installation
 ============
 
 1. Run ``pip install django-speedinfo``.
-2. Add ``speedinfo`` to the beginning of the ``INSTALLED_APPS``.
+2. Add ``speedinfo`` to ``INSTALLED_APPS``.
 3. Add ``speedinfo.middleware.ProfilerMiddleware`` to the end of ``MIDDLEWARE`` (or ``MIDDLEWARE_CLASSES`` for Django < 1.10) list, but before ``django.middleware.cache.FetchFromCacheMiddleware`` (if used)::
 
     MIDDLEWARE = [
@@ -32,9 +30,18 @@ Installation
         'django.middleware.cache.FetchFromCacheMiddleware',
     ]
 
-4. Run ``python manage.py migrate``.
-5. Run ``python manage.py collectstatic``.
-6. Setup any cache backend, except local-memory and dummy caching. Profiler uses the cache to store its state.
+4. Setup any cache backend, except local-memory and dummy caching, using our proxy cache backend. Speedinfo needs cache to store profiler state between requests and to intercept calls to cache::
+
+    CACHES = {
+        'default': {
+            'BACKEND': 'speedinfo.backends.proxy_cache',
+            'CACHE_BACKEND': 'django.core.cache.backends.filebased.FileBasedCache',
+            'LOCATION': '/var/tmp/django_cache',
+        }
+    }
+
+5. Run ``python manage.py migrate``.
+6. Run ``python manage.py collectstatic``.
 
 
 Usage

@@ -10,14 +10,14 @@ SECRET_KEY = 'secret-key'
 DEBUG = True
 
 INSTALLED_APPS = [
-    'speedinfo',
-
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+
+    'speedinfo',
 ]
 
 MIDDLEWARE = [
@@ -63,3 +63,10 @@ DATABASES = {
 }
 
 STATIC_URL = '/static/'
+
+CACHES = {
+    'default': {
+        'BACKEND': 'speedinfo.backends.proxy_cache',
+        'CACHE_BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+    }
+}
