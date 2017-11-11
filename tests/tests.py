@@ -7,7 +7,7 @@ from time import sleep
 
 from django.contrib.auth.models import User
 from django.core.cache import cache
-from django.test import TestCase
+from django.test import TestCase, override_settings
 
 from speedinfo import profiler, settings
 from speedinfo.admin import ViewProfilerAdmin
@@ -140,6 +140,12 @@ class ProfilerTest(TestCase):
         self.client.get(self.cached_class_view_url)
         data = ViewProfiler.objects.first()
         self.assertEqual(data.cache_hits, 1)
+
+    @override_settings(APPEND_SLASH=True)
+    def test_trailing_slash(self):
+        response = self.client.get('/func')
+        self.assertEqual(response.status_code, 301)
+        self.assertFalse(ViewProfiler.objects.exists())
 
     def test_export(self):
         ViewProfiler.objects.create(

@@ -9,10 +9,9 @@ with open(join(dirname(__file__), 'README.rst')) as f:
 
 setup(
     name='django-speedinfo',
-    version='1.2',
+    version='1.3',
     packages=['speedinfo', 'speedinfo.migrations'],
     include_package_data=True,
-    install_requires=['Django'],
     license='MIT',
     description='Live profiling tool for Django framework to measure views performance',
     long_description=long_description,
@@ -25,6 +24,7 @@ setup(
         'Environment :: Web Environment',
         'Framework :: Django',
         'Framework :: Django :: 1.8',
+        'Framework :: Django :: 1.9',
         'Framework :: Django :: 1.10',
         'Framework :: Django :: 1.11',
         'License :: OSI Approved :: MIT License',
