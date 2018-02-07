@@ -20,7 +20,7 @@ env:
 matrix:
   exclude:
     - python: "2.7"
-      env: DJANGO=2.0
+      env: DJANGO_VERSION=2.0
 
 install:
   - pip install -q Django==$DJANGO_VERSION
