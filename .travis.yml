@@ -12,10 +12,15 @@ before_install:
   - export DJANGO_SETTINGS_MODULE=tests.test_settings
 
 env:
-  - DJANGO_VERSION=1.8.18
-  - DJANGO_VERSION=1.10.8
-  - DJANGO_VERSION=1.11.10
-  - DJANGO_VERSION=2.0.2
+  - DJANGO_VERSION=1.8
+  - DJANGO_VERSION=1.10
+  - DJANGO_VERSION=1.11
+  - DJANGO_VERSION=2.0
+
+matrix:
+  exclude:
+    - python: "2.7"
+      env: DJANGO=2.0
 
 install:
   - pip install -q Django==$DJANGO_VERSION
