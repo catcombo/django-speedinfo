@@ -87,7 +87,7 @@ class ProfilerMiddleware(object):
 
         # Collects request and response params
         view_name = self.get_view_name(request)
-        is_anon_call = request.user.is_anonymous()
+        is_anon_call = request.user.is_anonymous() if callable(request.user.is_anonymous) else request.user.is_anonymous
         is_cache_hit = getattr(response, settings.SPEEDINFO_CACHED_RESPONSE_ATTR_NAME, False)
 
         # Saves profiler data
