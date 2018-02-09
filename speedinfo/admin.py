@@ -64,6 +64,7 @@ class ViewProfilerAdmin(admin.ModelAdmin):
 
     def changelist_view(self, request, extra_context=None):
         return super(ViewProfilerAdmin, self).changelist_view(request, extra_context={
+            'title': 'Views profiler',
             'profiler_is_on': profiler.is_on,
         })
 
