@@ -16,7 +16,6 @@ except ImportError:
 
 
 class ViewProfilerAdmin(admin.ModelAdmin):
-    list_display = settings.SPEEDINFO_REPORT_COLUMNS
     list_display_links = None
     actions = None
     ordering = ('-total_time',)
@@ -32,26 +31,32 @@ class ViewProfilerAdmin(admin.ModelAdmin):
             percall=ExpressionWrapper(F('total_time') / F('total_calls'), output_field=FloatField())
         )
 
-    def anon_calls_ratio(self, obj):
-        return '{:.1f} %'.format(obj.anon_calls_ratio)
-    anon_calls_ratio.short_description = 'Anonymous calls'
+    def get_list_display(self, request):
+        """Creates and returns list of callables to represent
+        model field values with a custom format.
 
-    def cache_hits_ratio(self, obj):
-        return '{:.1f} %'.format(obj.cache_hits_ratio)
-    cache_hits_ratio.short_description = 'Cache hits'
+        :param request: Request object
+        :type request: :class:`django.http.HttpRequest`
+        :return: list containing fields to be displayed on the changelist
+        """
+        list_display = []
 
-    def sql_count_per_call(self, obj):
-        return obj.sql_count_per_call
-    sql_count_per_call.short_description = 'SQL queries per call'
+        for rc in settings.SPEEDINFO_REPORT_COLUMNS_FORMAT:
+            if rc.attr_name in settings.SPEEDINFO_REPORT_COLUMNS:
 
-    def sql_time_ratio(self, obj):
-        return '{:.1f} %'.format(obj.sql_time_ratio)
-    sql_time_ratio.short_description = 'SQL time'
+                def wrapper(col):
+                    def field_format(obj):
+                        return col.format.format(getattr(obj, col.attr_name))
+                    field_format.short_description = col.name
+                    field_format.admin_order_field = col.order_field
 
-    def time_per_call(self, obj):
-        return obj.time_per_call
-    time_per_call.short_description = 'Time per call'
-    time_per_call.admin_order_field = 'percall'
+                    return field_format
+
+                list_display.append(
+                    wrapper(rc)
+                )
+
+        return list_display
 
     def change_view(self, *args, **kwargs):
         raise PermissionDenied
