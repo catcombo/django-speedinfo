@@ -165,14 +165,14 @@ class ProfilerTest(TestCase):
         self.assertEqual(results[0], ['View name', 'HTTP method', 'Anonymous calls', 'Cache hits',
                                       'SQL queries per call', 'SQL time', 'Total calls', 'Time per call', 'Total time'])
         self.assertEqual(results[1], ['app.view_name', 'GET', '100.0%', '50.0%',
-                                      '3', '50.0%', '2', '1.0', '2.0'])
+                                      '3', '50.0%', '2', '1.00000000', '2.0000'])
 
         # Export with custom columns
         settings.SPEEDINFO_REPORT_COLUMNS = ('view_name', 'method', 'total_calls', 'time_per_call', 'total_time')
         output = profiler.export()
         results = list(csv.reader(output.getvalue().splitlines()))
         self.assertEqual(results[0], ['View name', 'HTTP method', 'Total calls', 'Time per call', 'Total time'])
-        self.assertEqual(results[1], ['app.view_name', 'GET', '2', '1.0', '2.0'])
+        self.assertEqual(results[1], ['app.view_name', 'GET', '2', '1.00000000', '2.0000'])
 
     def test_flush(self):
         self.client.get(self.class_view_url)
@@ -243,4 +243,3 @@ class ProfilerAdminTest(TestCase):
         response = self.client.get(reverse('admin:speedinfo_viewprofiler_changelist'))
         self.assertEqual(response.status_code, 200)
         self.assertTrue('profiler_is_on' in response.context)
-        self.assertEqual(ViewProfilerAdmin.list_display, settings.SPEEDINFO_REPORT_COLUMNS)

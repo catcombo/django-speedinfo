@@ -2,7 +2,8 @@
 
 import re
 
-from time import time
+from timeit import default_timer
+
 from django.db import connection
 from speedinfo import profiler, settings
 
@@ -61,7 +62,7 @@ class ProfilerMiddleware(object):
         # Force DB connection to debug mode to get sql time and number of queries
         self.force_debug_cursor = connection.force_debug_cursor
         connection.force_debug_cursor = True
-        self.start_time = time()
+        self.start_time = default_timer()
 
     def process_response(self, request, response):
         """Aggregates request and response statistics and saves it in profiler data.
@@ -76,7 +77,7 @@ class ProfilerMiddleware(object):
         if not profiler.is_on or self.match_exclude_urls(request.path) or not hasattr(request, 'user'):
             return response
 
-        duration = time() - self.start_time
+        duration = default_timer() - self.start_time
         connection.force_debug_cursor = self.force_debug_cursor
 
         # Get SQL queries count and execution time
