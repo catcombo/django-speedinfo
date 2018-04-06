@@ -2,6 +2,7 @@
 
 import re
 
+from functools import reduce
 from itertools import islice
 from operator import add
 from timeit import default_timer
