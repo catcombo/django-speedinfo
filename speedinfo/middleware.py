@@ -2,6 +2,9 @@
 
 import re
 
+from functools import reduce
+from itertools import islice
+from operator import add
 from timeit import default_timer
 
 from django.db import connection
@@ -22,6 +25,7 @@ class ProfilerMiddleware(object):
         self.get_response = get_response
         self.force_debug_cursor = False
         self.start_time = 0
+        self.existing_sql_count = 0
         self.exclude_urls_re = [re.compile(pattern) for pattern in settings.SPEEDINFO_EXCLUDE_URLS]
 
     def match_exclude_urls(self, path):
@@ -62,6 +66,7 @@ class ProfilerMiddleware(object):
         # Force DB connection to debug mode to get sql time and number of queries
         self.force_debug_cursor = connection.force_debug_cursor
         connection.force_debug_cursor = True
+        self.existing_sql_count = len(connection.queries)
         self.start_time = default_timer()
 
     def process_response(self, request, response):
@@ -80,11 +85,10 @@ class ProfilerMiddleware(object):
         duration = default_timer() - self.start_time
         connection.force_debug_cursor = self.force_debug_cursor
 
-        # Get SQL queries count and execution time
-        sql_time = 0
-        sql_count = len(connection.queries)
-        for query in connection.queries:
-            sql_time += float(query.get('time', 0))
+        # Calculate the execution time and the number of queries.
+        # Exclude queries made before the call of our middleware (e.g. in SessionMiddleware).
+        sql_count = max(len(connection.queries) - self.existing_sql_count, 0)
+        sql_time = reduce(add, [float(q['time']) for q in islice(connection.queries, self.existing_sql_count, None)], 0)
 
         # Collects request and response params
         view_name = self.get_view_name(request)

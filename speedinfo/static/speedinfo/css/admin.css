@@ -12,3 +12,8 @@
 .object-tools a.turned-off {
     background-image: url('../img/icon-turned-off.svg');
 }
+
+#result_list .row1:hover,
+#result_list .row2:hover {
+    background-color: #ffc;
+}
