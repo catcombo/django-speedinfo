@@ -91,3 +91,13 @@ Default value::
         'view_name', 'method', 'anon_calls_ratio', 'cache_hits_ratio',
         'sql_count_per_call', 'sql_time_ratio', 'total_calls', 'time_per_call', 'total_time'
     )
+
+
+Notice
+======
+
+The number of SQL queries measured by `django-speedinfo` may differ from the values
+of `django-debug-toolbar` for the same view. First of all, because we show the average number
+of SQL queries for each view. Secondly, we don't take into account SQL queries
+made before the call of a view (e.g. in the preceding middlewares), as well SQL queries
+made after the call view.
