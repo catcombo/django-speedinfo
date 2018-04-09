@@ -9,7 +9,7 @@ with open(join(dirname(__file__), 'README.rst')) as f:
 
 setup(
     name='django-speedinfo',
-    version='1.3.3',
+    version='1.3.4',
     packages=['speedinfo', 'speedinfo.migrations'],
     include_package_data=True,
     license='MIT',
