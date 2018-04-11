@@ -1,47 +1,15 @@
 # coding: utf-8
 
-import csv
-
-try:
-    from StringIO import StringIO
-except ImportError:
-    from io import StringIO
-
 from django.core.cache import cache
 from django.db import IntegrityError
 
-from speedinfo import settings
 
-
-class Profiler(object):
+class ProfilerData(object):
     """
-    Profiler class to save it's state and process the data.
+    Encapsulates work with the profiling data.
     """
-    PROFILER_STATE_CACHE_KEY = 'speedinfo.profiler.is_on'
-
-    @property
-    def is_on(self):
-        """Returns state of the profiler.
-
-        :return: state of the profiler
-        :rtype: bool
-        """
-        return cache.get(self.PROFILER_STATE_CACHE_KEY, False)
-
-    @is_on.setter
-    def is_on(self, value):
-        """Sets state of the profiler.
-
-        :param bool value: State value
-        """
-        cache.set(self.PROFILER_STATE_CACHE_KEY, value, None)
-
-    def switch(self):
-        """Toggles state of the profiler"""
-        self.is_on = not self.is_on
-
-    def process(self, view_name, method, is_anon_call, is_cache_hit, sql_time, sql_count, duration):
-        """Saves request data and statistics.
+    def add(self, view_name, method, is_anon_call, is_cache_hit, sql_time, sql_count, view_execution_time):
+        """Adds profiling data.
 
         :param str view_name: View name
         :param str method: HTTP method (GET, POST, etc.)
@@ -49,7 +17,7 @@ class Profiler(object):
         :param bool is_cache_hit: If True, view response was retrieved from cache
         :param float sql_time: SQL queries execution time
         :param int sql_count: Number of SQL queries
-        :param float duration: Duration of the view response
+        :param float view_execution_time: View execution time
         """
         from django.db.models import F
         from speedinfo.models import ViewProfiler
@@ -67,33 +35,46 @@ class Profiler(object):
             sql_total_time=F('sql_total_time') + sql_time,
             sql_total_count=F('sql_total_count') + sql_count,
             total_calls=F('total_calls') + 1,
-            total_time=F('total_time') + duration
+            total_time=F('total_time') + view_execution_time
         )
 
-    def export(self):
-        """Exports profiling data as a comma-separated file-like object.
+    def all(self):
+        """Returns iterable object over all profiling data.
 
-        :return: comma-separated profiling data
-        :rtype: :class:`StringIO`
+        :return: profiling data
+        :rtype: :class:`typing.Iterable`
         """
         from speedinfo.models import ViewProfiler
+        return ViewProfiler.objects.order_by('-total_time')
 
-        output = StringIO()
-        export_columns = list(filter(lambda col: col.attr_name in settings.SPEEDINFO_REPORT_COLUMNS,
-                                     settings.SPEEDINFO_REPORT_COLUMNS_FORMAT))
-
-        csv_writer = csv.writer(output)
-        csv_writer.writerow([col.name for col in export_columns])
-
-        for vp in ViewProfiler.objects.order_by('-total_time'):
-            csv_writer.writerow([
-                col.format.format(getattr(vp, col.attr_name))
-                for col in export_columns
-            ])
-
-        return output
-
-    def flush(self):
+    def reset(self):
         """Deletes all profiling data"""
         from speedinfo.models import ViewProfiler
         ViewProfiler.objects.all().delete()
+
+
+class Profiler(object):
+    """
+    Profiler class to store its state and process the data.
+    """
+    PROFILER_STATE_CACHE_KEY = 'speedinfo.profiler.is_on'
+
+    def __init__(self):
+        self.data = ProfilerData()
+
+    @property
+    def is_on(self):
+        """Returns state of the profiler.
+
+        :return: state of the profiler
+        :rtype: bool
+        """
+        return cache.get(self.PROFILER_STATE_CACHE_KEY, False)
+
+    @is_on.setter
+    def is_on(self, value):
+        """Sets state of the profiler.
+
+        :param bool value: State value
+        """
+        cache.set(self.PROFILER_STATE_CACHE_KEY, value, None)

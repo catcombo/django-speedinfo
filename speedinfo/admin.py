@@ -1,5 +1,12 @@
 # coding: utf-8
 
+import csv
+
+try:
+    from StringIO import StringIO
+except ImportError:
+    from io import StringIO
+
 from django.conf.urls import url
 from django.contrib import admin
 from django.core.exceptions import PermissionDenied
@@ -81,18 +88,36 @@ class ViewProfilerAdmin(admin.ModelAdmin):
         ] + super(ViewProfilerAdmin, self).get_urls()
 
     def switch(self, request):
-        profiler.switch()
+        profiler.is_on = not profiler.is_on
         return HttpResponseRedirect(reverse('admin:speedinfo_viewprofiler_changelist'))
 
     def export(self, request):
-        output = profiler.export()
+        """Exports profiling data as a comma-separated file.
+
+        :param request: :class:`django.http.HttpRequest`
+        :return: comma-separated file
+        :rtype: :class:`django.http.HttpResponse`
+        """
+        output = StringIO()
+        export_columns = list(filter(lambda col: col.attr_name in settings.SPEEDINFO_REPORT_COLUMNS,
+                                     settings.SPEEDINFO_REPORT_COLUMNS_FORMAT))
+
+        csv_writer = csv.writer(output)
+        csv_writer.writerow([col.name for col in export_columns])
+
+        for row in profiler.data.all():
+            csv_writer.writerow([
+                col.format.format(getattr(row, col.attr_name))
+                for col in export_columns
+            ])
+
         response = HttpResponse(output.getvalue(), content_type='text/csv')
         response['Content-Disposition'] = 'attachment; filename=profiler.csv'
 
         return response
 
     def reset(self, request):
-        profiler.flush()
+        profiler.data.reset()
         return HttpResponseRedirect(reverse('admin:speedinfo_viewprofiler_changelist'))
 
 

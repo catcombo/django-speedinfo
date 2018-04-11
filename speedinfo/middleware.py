@@ -100,7 +100,7 @@ class ProfilerMiddleware(object):
             is_cache_hit = getattr(response, settings.SPEEDINFO_CACHED_RESPONSE_ATTR_NAME, False)
 
             # Saves profiler data
-            profiler.process(view_name, request.method, is_anon_call, is_cache_hit, sql_time, sql_count, view_execution_time)
+            profiler.data.add(view_name, request.method, is_anon_call, is_cache_hit, sql_time, sql_count, view_execution_time)
 
         return response
 
