@@ -2,6 +2,7 @@
 
 from time import sleep
 
+from django.contrib.auth.models import User
 from django.http import HttpResponse
 from django.views.generic import View
 from django.views.decorators.cache import cache_page
@@ -28,4 +29,10 @@ def func_view(request):
 
 @cache_page(2)
 def cached_func_view(request):
+    return HttpResponse()
+
+
+def db_func_view(request):
+    User.objects.create_user(username='user', password='123456')
+    User.objects.get(username='user')
     return HttpResponse()

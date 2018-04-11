@@ -1,6 +1,5 @@
 # coding: utf-8
 
-import csv
 import django
 
 from time import sleep
@@ -10,7 +9,6 @@ from django.core.cache import cache
 from django.test import TestCase, override_settings
 
 from speedinfo import profiler, settings
-from speedinfo.admin import ViewProfilerAdmin
 from speedinfo.models import ViewProfiler
 
 try:
@@ -29,13 +27,14 @@ class ProfilerTest(TestCase):
         self.cached_class_view_url = reverse('cached-class-view')
         self.func_view_url = reverse('func-view')
         self.cached_func_view_url = reverse('cached-func-view')
+        self.db_func_view_url = reverse('db-func-view')
 
     def test_profiler_state(self):
         profiler.is_on = False
         self.client.get(self.func_view_url)
         self.assertFalse(ViewProfiler.objects.exists())
 
-        profiler.switch()
+        profiler.is_on = True
         self.client.get(self.func_view_url)
         self.assertTrue(ViewProfiler.objects.exists())
 
@@ -95,6 +94,10 @@ class ProfilerTest(TestCase):
         self.assertEqual(data.anon_calls, 1)
         self.assertEqual(data.total_calls, 2)
 
+    def test_db_queries(self):
+        self.client.get(self.db_func_view_url)
+        self.assertTrue(ViewProfiler.objects.filter(view_name='tests.views.db_func_view', sql_total_count=2).exists())
+
     def test_per_view_cache(self):
         # First request doesn't hit cache
         self.client.get(self.cached_func_view_url)
@@ -147,39 +150,12 @@ class ProfilerTest(TestCase):
         self.assertEqual(response.status_code, 301)
         self.assertFalse(ViewProfiler.objects.exists())
 
-    def test_export(self):
-        ViewProfiler.objects.create(
-            view_name='app.view_name',
-            method='GET',
-            anon_calls=2,
-            cache_hits=1,
-            sql_total_time=1,
-            sql_total_count=6,
-            total_time=2,
-            total_calls=2
-        )
-
-        # Default export
-        output = profiler.export()
-        results = list(csv.reader(output.getvalue().splitlines()))
-        self.assertEqual(results[0], ['View name', 'HTTP method', 'Anonymous calls', 'Cache hits',
-                                      'SQL queries per call', 'SQL time', 'Total calls', 'Time per call', 'Total time'])
-        self.assertEqual(results[1], ['app.view_name', 'GET', '100.0%', '50.0%',
-                                      '3', '50.0%', '2', '1.00000000', '2.0000'])
-
-        # Export with custom columns
-        settings.SPEEDINFO_REPORT_COLUMNS = ('view_name', 'method', 'total_calls', 'time_per_call', 'total_time')
-        output = profiler.export()
-        results = list(csv.reader(output.getvalue().splitlines()))
-        self.assertEqual(results[0], ['View name', 'HTTP method', 'Total calls', 'Time per call', 'Total time'])
-        self.assertEqual(results[1], ['app.view_name', 'GET', '2', '1.00000000', '2.0000'])
-
-    def test_flush(self):
+    def test_reset(self):
         self.client.get(self.class_view_url)
         self.client.get(self.func_view_url)
         self.assertEqual(ViewProfiler.objects.count(), 2)
 
-        profiler.flush()
+        profiler.data.reset()
         self.assertFalse(ViewProfiler.objects.exists())
 
     def test_exclude_urls(self):
@@ -198,11 +174,23 @@ class ProfilerTest(TestCase):
 class ProfilerAdminTest(TestCase):
     def setUp(self):
         cache.clear()
-        settings.SPEEDINFO_EXCLUDE_URLS = []
+        settings.SPEEDINFO_EXCLUDE_URLS = [reverse('admin:index')]
+
         User.objects.create_superuser(username='admin', email='', password='123456')
         self.client.login(username='admin', password='123456')
 
-    def test_switch_url(self):
+        ViewProfiler.objects.create(
+            view_name='app.view_name',
+            method='GET',
+            anon_calls=2,
+            cache_hits=1,
+            sql_total_time=1,
+            sql_total_count=6,
+            total_time=2,
+            total_calls=2
+        )
+
+    def test_switch(self):
         self.assertFalse(profiler.is_on)
         self.client.get(reverse('admin:speedinfo-profiler-switch'))
 
@@ -210,33 +198,37 @@ class ProfilerAdminTest(TestCase):
         self.client.get(reverse('admin:speedinfo-profiler-switch'))
         self.assertFalse(profiler.is_on)
 
-    def test_export_url(self):
-        self.client.get(reverse('class-view'))
+    def test_export(self):
+        # Default export
         response = self.client.get(reverse('admin:speedinfo-profiler-export'))
         self.assertEquals(response.get('Content-Disposition'), 'attachment; filename=profiler.csv')
-        self.assertEqual(response.content.decode(), profiler.export().getvalue())
 
-    def test_flush_url(self):
-        profiler.is_on = True
-        settings.SPEEDINFO_EXCLUDE_URLS = [reverse('admin:index')]
+        output = response.content.decode()
+        self.assertEqual(output, 'View name,HTTP method,Anonymous calls,Cache hits,SQL queries per call,SQL time,Total calls,Time per call,Total time\r\n'
+                                 'app.view_name,GET,100.0%,50.0%,3,50.0%,2,1.00000000,2.0000\r\n')
 
-        self.client.get(reverse('class-view'))
-        self.assertTrue(ViewProfiler.objects.exists())
+        # Export with custom columns
+        settings.SPEEDINFO_REPORT_COLUMNS = ('view_name', 'method', 'total_calls', 'time_per_call', 'total_time')
 
+        response = self.client.get(reverse('admin:speedinfo-profiler-export'))
+        output = response.content.decode()
+
+        self.assertEqual(output, 'View name,HTTP method,Total calls,Time per call,Total time\r\n'
+                                 'app.view_name,GET,2,1.00000000,2.0000\r\n')
+
+    def test_reset(self):
         self.client.get(reverse('admin:speedinfo-profiler-reset'))
         self.assertFalse(ViewProfiler.objects.exists())
 
     def test_permissions(self):
-        profiler.is_on = True
-        self.client.get(reverse('class-view'))
-
         response = self.client.get(reverse('admin:speedinfo_viewprofiler_add'))
         self.assertEqual(response.status_code, 403)
 
-        response = self.client.get(reverse('admin:speedinfo_viewprofiler_change', args=(1,)))
+        vp = ViewProfiler.objects.first()
+        response = self.client.get(reverse('admin:speedinfo_viewprofiler_change', args=(vp.id,)))
         self.assertEqual(response.status_code, 403)
 
-        response = self.client.get(reverse('admin:speedinfo_viewprofiler_delete', args=(1,)))
+        response = self.client.get(reverse('admin:speedinfo_viewprofiler_delete', args=(vp.id,)))
         self.assertEqual(response.status_code, 403)
 
     def test_changelist(self):
