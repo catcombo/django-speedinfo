@@ -12,9 +12,7 @@ SpeedInfo counts number of calls, cache hits, SQL queries,
 measures average and total call time and more for each of your views.
 Detailed report and profiler controls are available in Django admin.
 
-.. image:: screenshots/main.png
-    :width: 80%
-    :align: center
+![Speedinfo preview](https://raw.githubusercontent.com/catcombo/django-speedinfo/develop/screenshots/main.png)
 
 
 Installation
