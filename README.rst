@@ -12,8 +12,8 @@ SpeedInfo counts number of calls, cache hits, SQL queries,
 measures average and total call time and more for each of your views.
 Detailed report and profiler controls are available in Django admin.
 
-.. image:: screenshots/main.png
-    :width: 80%
+.. image:: https://raw.githubusercontent.com/catcombo/django-speedinfo/develop/screenshots/main.png
+    :width: 64%
     :align: center
 
 
@@ -48,7 +48,7 @@ Usage
 =====
 
 Open ``Views profiler`` in Django admin. Click the ``Turn on`` / ``Turn off`` button
-to control profiler state. Use ``Reset`` button to flush all data.
+to control profiler state. Press ``Reset`` button to reset all data.
 
 
 Configuration
@@ -96,8 +96,8 @@ Default value::
 Notice
 ======
 
-The number of SQL queries measured by `django-speedinfo` may differ from the values
-of `django-debug-toolbar` for the same view. First of all, because we show the average number
+The number of SQL queries measured by ``django-speedinfo`` may differ from the values
+of ``django-debug-toolbar`` for the same view. First of all, because we show the average number
 of SQL queries for each view. Secondly, we don't take into account SQL queries
 made before the call of a view (e.g. in the preceding middlewares), as well SQL queries
 made after the call view.
