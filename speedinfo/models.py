@@ -17,7 +17,7 @@ class ViewProfiler(models.Model):
     total_time = models.FloatField('Total time', default=0)
 
     class Meta:
-        verbose_name_plural = 'Views profiler'
+        verbose_name_plural = 'Views'
         unique_together = ('view_name', 'method')
 
     @property
