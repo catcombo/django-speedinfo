@@ -17,3 +17,13 @@
 #result_list .row2:hover {
     background-color: #ffc;
 }
+
+.fixed-header {
+    position: fixed;
+    top: 0;
+    width: auto !important;
+    display:none;
+    border: none;
+    margin: 0;
+    z-index: 999;
+}
