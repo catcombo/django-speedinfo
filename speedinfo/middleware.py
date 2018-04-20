@@ -2,9 +2,7 @@
 
 import re
 
-from functools import reduce
 from itertools import islice
-from operator import add
 from timeit import default_timer
 
 from django.db import connection
@@ -91,7 +89,7 @@ class ProfilerMiddleware(object):
             # Calculate the execution time and the number of queries.
             # Exclude queries made before the call of our middleware (e.g. in SessionMiddleware).
             sql_count = max(len(connection.queries) - self.existing_sql_count, 0)
-            sql_time = reduce(add, [float(q['time']) for q in islice(connection.queries, self.existing_sql_count, None)], 0)
+            sql_time = sum(float(q['time']) for q in islice(connection.queries, self.existing_sql_count, None))
             connection.force_debug_cursor = self.force_debug_cursor
 
             # Collects request and response params
