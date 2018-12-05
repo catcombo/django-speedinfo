@@ -22,6 +22,23 @@ except ImportError:
     from django.core.urlresolvers import reverse
 
 
+def field_wrapper(col):
+    """Helper function to dynamically create list display method
+    for :class:`ViewProfilerAdmin` to control value formating
+    and sort order.
+
+    :type col: :data:`settings.ReportColumnFormat`
+    :rtype: function
+    """
+    def field_format(obj):
+        return col.format.format(getattr(obj, col.attr_name))
+
+    field_format.short_description = col.name
+    field_format.admin_order_field = col.order_field
+
+    return field_format
+
+
 class ViewProfilerAdmin(admin.ModelAdmin):
     list_display_links = None
     actions = None
@@ -32,38 +49,24 @@ class ViewProfilerAdmin(admin.ModelAdmin):
             'all': ('speedinfo/css/admin.css',)
         }
 
+    def __init__(self, *args, **kwargs):
+        """Initializes the list of visible columns and
+        the way they are formating the values.
+        """
+        super(ViewProfilerAdmin, self).__init__(*args, **kwargs)
+        self.list_display = []
+
+        for rc in settings.SPEEDINFO_REPORT_COLUMNS_FORMAT:
+            if rc.attr_name in settings.SPEEDINFO_REPORT_COLUMNS:
+                method_name = '{}_wrapper'.format(rc.attr_name)
+                setattr(self, method_name, field_wrapper(rc))
+                self.list_display.append(method_name)
+
     def get_queryset(self, request):
         qs = super(ViewProfilerAdmin, self).get_queryset(request)
         return qs.annotate(
             percall=ExpressionWrapper(F('total_time') / F('total_calls'), output_field=FloatField())
         )
-
-    def get_list_display(self, request):
-        """Creates and returns list of callables to represent
-        model field values with a custom format.
-
-        :param request: Request object
-        :type request: :class:`django.http.HttpRequest`
-        :return: list containing fields to be displayed on the changelist
-        """
-        list_display = []
-
-        for rc in settings.SPEEDINFO_REPORT_COLUMNS_FORMAT:
-            if rc.attr_name in settings.SPEEDINFO_REPORT_COLUMNS:
-
-                def wrapper(col):
-                    def field_format(obj):
-                        return col.format.format(getattr(obj, col.attr_name))
-                    field_format.short_description = col.name
-                    field_format.admin_order_field = col.order_field
-
-                    return field_format
-
-                list_display.append(
-                    wrapper(rc)
-                )
-
-        return list_display
 
     def change_view(self, *args, **kwargs):
         raise PermissionDenied
