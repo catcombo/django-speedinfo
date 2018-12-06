@@ -38,15 +38,6 @@ class ProfilerData(object):
             total_time=F('total_time') + view_execution_time
         )
 
-    def all(self):
-        """Returns iterable object over all profiling data.
-
-        :return: profiling data
-        :rtype: :class:`typing.Iterable`
-        """
-        from speedinfo.models import ViewProfiler
-        return ViewProfiler.objects.order_by('-total_time')
-
     def reset(self):
         """Deletes all profiling data"""
         from speedinfo.models import ViewProfiler

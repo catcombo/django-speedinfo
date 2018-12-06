@@ -10,7 +10,6 @@ except ImportError:
 from django.conf.urls import url
 from django.contrib import admin
 from django.core.exceptions import PermissionDenied
-from django.db.models import F, FloatField, ExpressionWrapper
 from django.http import HttpResponseRedirect, HttpResponse
 
 from speedinfo import profiler, settings
@@ -34,7 +33,7 @@ def field_wrapper(col):
         return col.format.format(getattr(obj, col.attr_name))
 
     field_format.short_description = col.name
-    field_format.admin_order_field = col.order_field
+    field_format.admin_order_field = col.attr_name
 
     return field_format
 
@@ -64,9 +63,14 @@ class ViewProfilerAdmin(admin.ModelAdmin):
 
     def get_queryset(self, request):
         qs = super(ViewProfilerAdmin, self).get_queryset(request)
-        return qs.annotate(
-            percall=ExpressionWrapper(F('total_time') / F('total_calls'), output_field=FloatField())
-        )
+
+        for rc in settings.SPEEDINFO_REPORT_COLUMNS_FORMAT:
+            if (rc.attr_name in settings.SPEEDINFO_REPORT_COLUMNS) and not isinstance(rc.order_field, str):
+                qs = qs.annotate(**{
+                    rc.attr_name: rc.order_field
+                })
+
+        return qs
 
     def change_view(self, *args, **kwargs):
         raise PermissionDenied
@@ -108,7 +112,7 @@ class ViewProfilerAdmin(admin.ModelAdmin):
         csv_writer = csv.writer(output)
         csv_writer.writerow([col.name for col in export_columns])
 
-        for row in profiler.data.all():
+        for row in self.get_queryset(request):
             csv_writer.writerow([
                 col.format.format(getattr(row, col.attr_name))
                 for col in export_columns
