@@ -12,8 +12,9 @@ from django.contrib import admin
 from django.core.exceptions import PermissionDenied
 from django.http import HttpResponseRedirect, HttpResponse
 
-from speedinfo import profiler, settings
+from speedinfo import profiler
 from speedinfo.models import ViewProfiler
+from speedinfo.settings import speedinfo_settings
 
 try:
     from django.urls import reverse  # Django >= 1.10
@@ -55,8 +56,8 @@ class ViewProfilerAdmin(admin.ModelAdmin):
         super(ViewProfilerAdmin, self).__init__(*args, **kwargs)
         self.list_display = []
 
-        for rc in settings.SPEEDINFO_REPORT_COLUMNS_FORMAT:
-            if rc.attr_name in settings.SPEEDINFO_REPORT_COLUMNS:
+        for rc in speedinfo_settings.SPEEDINFO_REPORT_COLUMNS_FORMAT:
+            if rc.attr_name in speedinfo_settings.SPEEDINFO_REPORT_COLUMNS:
                 method_name = '{}_wrapper'.format(rc.attr_name)
                 setattr(self, method_name, field_wrapper(rc))
                 self.list_display.append(method_name)
@@ -64,8 +65,8 @@ class ViewProfilerAdmin(admin.ModelAdmin):
     def get_queryset(self, request):
         qs = super(ViewProfilerAdmin, self).get_queryset(request)
 
-        for rc in settings.SPEEDINFO_REPORT_COLUMNS_FORMAT:
-            if (rc.attr_name in settings.SPEEDINFO_REPORT_COLUMNS) and not isinstance(rc.order_field, str):
+        for rc in speedinfo_settings.SPEEDINFO_REPORT_COLUMNS_FORMAT:
+            if (rc.attr_name in speedinfo_settings.SPEEDINFO_REPORT_COLUMNS) and not isinstance(rc.order_field, str):
                 qs = qs.annotate(**{
                     rc.attr_name: rc.order_field
                 })
@@ -106,8 +107,8 @@ class ViewProfilerAdmin(admin.ModelAdmin):
         :rtype: :class:`django.http.HttpResponse`
         """
         output = StringIO()
-        export_columns = list(filter(lambda col: col.attr_name in settings.SPEEDINFO_REPORT_COLUMNS,
-                                     settings.SPEEDINFO_REPORT_COLUMNS_FORMAT))
+        export_columns = list(filter(lambda col: col.attr_name in speedinfo_settings.SPEEDINFO_REPORT_COLUMNS,
+                                     speedinfo_settings.SPEEDINFO_REPORT_COLUMNS_FORMAT))
 
         csv_writer = csv.writer(output)
         csv_writer.writerow([col.name for col in export_columns])

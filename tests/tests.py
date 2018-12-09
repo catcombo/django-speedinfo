@@ -8,7 +8,7 @@ from django.contrib.auth.models import User
 from django.core.cache import cache
 from django.test import TestCase, override_settings
 
-from speedinfo import profiler, settings
+from speedinfo import profiler
 from speedinfo.models import ViewProfiler
 
 try:
@@ -17,11 +17,11 @@ except ImportError:
     from django.core.urlresolvers import reverse
 
 
+@override_settings(SPEEDINFO_EXCLUDE_URLS=[])
 class ProfilerTest(TestCase):
     def setUp(self):
         cache.clear()
         profiler.is_on = True
-        settings.SPEEDINFO_EXCLUDE_URLS = []
 
         self.class_view_url = reverse('class-view')
         self.cached_class_view_url = reverse('cached-class-view')
@@ -158,9 +158,18 @@ class ProfilerTest(TestCase):
         profiler.data.reset()
         self.assertFalse(ViewProfiler.objects.exists())
 
-    def test_exclude_urls(self):
-        settings.SPEEDINFO_EXCLUDE_URLS = [reverse('func-view')]
 
+@override_settings(SPEEDINFO_EXCLUDE_URLS=[reverse('func-view')])
+class ExcludeURLConditionTest(TestCase):
+    def setUp(self):
+        cache.clear()
+        profiler.is_on = True
+
+        self.class_view_url = reverse('class-view')
+        self.func_view_url = reverse('func-view')
+        self.cached_func_view_url = reverse('cached-func-view')
+
+    def test_exclude_urls(self):
         self.client.get(self.func_view_url)
         self.assertFalse(ViewProfiler.objects.exists())
 
@@ -171,10 +180,10 @@ class ProfilerTest(TestCase):
         self.assertTrue(ViewProfiler.objects.exists())
 
 
+@override_settings(SPEEDINFO_EXCLUDE_URLS=[reverse('admin:index')])
 class ProfilerAdminTest(TestCase):
     def setUp(self):
         cache.clear()
-        settings.SPEEDINFO_EXCLUDE_URLS = [reverse('admin:index')]
 
         User.objects.create_superuser(username='admin', email='', password='123456')
         self.client.login(username='admin', password='123456')
@@ -207,9 +216,9 @@ class ProfilerAdminTest(TestCase):
         self.assertEqual(output, 'View name,HTTP method,Anonymous calls,Cache hits,SQL queries per call,SQL time,Total calls,Time per call,Total time\r\n'
                                  'app.view_name,GET,100.0%,50.0%,3,50.0%,2,1.00000000,2.0000\r\n')
 
+    @override_settings(SPEEDINFO_REPORT_COLUMNS=('view_name', 'method', 'total_calls', 'time_per_call', 'total_time'))
+    def test_custom_columns_export(self):
         # Export with custom columns
-        settings.SPEEDINFO_REPORT_COLUMNS = ('view_name', 'method', 'total_calls', 'time_per_call', 'total_time')
-
         response = self.client.get(reverse('admin:speedinfo-profiler-export'))
         output = response.content.decode()
 

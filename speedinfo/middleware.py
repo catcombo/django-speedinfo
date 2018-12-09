@@ -6,7 +6,8 @@ from itertools import islice
 from timeit import default_timer
 
 from django.db import connection
-from speedinfo import profiler, settings
+from speedinfo import profiler
+from speedinfo.settings import speedinfo_settings
 
 try:
     from django.urls import resolve, Resolver404  # Django >= 1.10
@@ -25,7 +26,7 @@ class ProfilerMiddleware(object):
         self.force_debug_cursor = False
         self.start_time = 0
         self.existing_sql_count = 0
-        self.exclude_urls_re = [re.compile(pattern) for pattern in settings.SPEEDINFO_EXCLUDE_URLS]
+        self.exclude_urls_re = [re.compile(pattern) for pattern in speedinfo_settings.SPEEDINFO_EXCLUDE_URLS]
 
     def match_exclude_urls(self, path):
         """Looks for a match requested page url to the exclude urls list.
@@ -95,7 +96,7 @@ class ProfilerMiddleware(object):
             # Collects request and response params
             view_name = self.get_view_name(request)
             is_anon_call = request.user.is_anonymous() if callable(request.user.is_anonymous) else request.user.is_anonymous
-            is_cache_hit = getattr(response, settings.SPEEDINFO_CACHED_RESPONSE_ATTR_NAME, False)
+            is_cache_hit = getattr(response, speedinfo_settings.SPEEDINFO_CACHED_RESPONSE_ATTR_NAME, False)
 
             # Saves profiler data
             profiler.data.add(view_name, request.method, is_anon_call, is_cache_hit, sql_time, sql_count, view_execution_time)

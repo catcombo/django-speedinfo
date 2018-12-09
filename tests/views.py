@@ -7,7 +7,7 @@ from django.http import HttpResponse
 from django.views.generic import View
 from django.views.decorators.cache import cache_page
 
-from speedinfo.settings import SPEEDINFO_CACHED_RESPONSE_ATTR_NAME
+from speedinfo.settings import speedinfo_settings
 
 
 class ClassBasedView(View):
@@ -19,7 +19,7 @@ class ClassBasedView(View):
 class CachedView(View):
     def get(self, request, *args, **kwargs):
         response = HttpResponse()
-        setattr(response, SPEEDINFO_CACHED_RESPONSE_ATTR_NAME, True)
+        setattr(response, speedinfo_settings.SPEEDINFO_CACHED_RESPONSE_ATTR_NAME, True)
         return response
 
 
