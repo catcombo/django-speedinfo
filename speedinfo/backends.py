@@ -3,7 +3,7 @@
 from django.core.cache import InvalidCacheBackendError
 from django.utils.module_loading import import_string
 
-from speedinfo.settings import SPEEDINFO_CACHED_RESPONSE_ATTR_NAME
+from speedinfo.settings import speedinfo_settings
 
 
 def proxy_cache(location, params):
@@ -24,7 +24,7 @@ def proxy_cache(location, params):
 
             # Sets the flag for marking response from cache
             if (response is not None) and key.startswith('views.decorators.cache.cache_page'):
-                setattr(response, SPEEDINFO_CACHED_RESPONSE_ATTR_NAME, True)
+                setattr(response, speedinfo_settings.SPEEDINFO_CACHED_RESPONSE_ATTR_NAME, True)
 
             return response
 
