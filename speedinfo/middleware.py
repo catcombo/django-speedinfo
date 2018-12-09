@@ -1,12 +1,11 @@
 # coding: utf-8
 
-import re
-
 from itertools import islice
 from timeit import default_timer
 
 from django.db import connection
 from speedinfo import profiler
+from speedinfo.conditions import conditions_dispatcher
 from speedinfo.settings import speedinfo_settings
 
 try:
@@ -26,20 +25,6 @@ class ProfilerMiddleware(object):
         self.force_debug_cursor = False
         self.start_time = 0
         self.existing_sql_count = 0
-        self.exclude_urls_re = [re.compile(pattern) for pattern in speedinfo_settings.SPEEDINFO_EXCLUDE_URLS]
-
-    def match_exclude_urls(self, path):
-        """Looks for a match requested page url to the exclude urls list.
-
-        :param str path: Path to the requested page, not including the scheme or domain
-        :return: True if path matches to any of the exclude urls
-        :rtype: bool
-        """
-        for url_re in self.exclude_urls_re:
-            if url_re.match(path):
-                return True
-
-        return False
 
     def get_view_name(self, request):
         """Returns full view name from request, eg. 'app.module.view_name'.
@@ -54,17 +39,47 @@ class ProfilerMiddleware(object):
         except Resolver404:
             return None
 
+    def can_process_request(self, request):
+        """Checks conditions to start profiling the request
+
+        :type request: :class:`django.http.HttpRequest`
+        :return: True if request can be processed
+        :rtype: bool
+        """
+        result = profiler.is_on and hasattr(request, 'user') and self.get_view_name(request)
+
+        for condition in conditions_dispatcher.get_conditions():
+            result = result and condition.process_request(request)
+
+            if not result:
+                break
+
+        return result
+
+    def can_process_response(self, response):
+        """Checks conditions to finish profiling the request
+
+        :type response: :class:`django.http.HttpResponse`
+        :return: True if request can be processed
+        :rtype: bool
+        """
+        result = True
+
+        for condition in conditions_dispatcher.get_conditions():
+            result = result and condition.process_response(response)
+
+            if not result:
+                break
+
+        return result
+
     def process_view(self, request, *args, **kwargs):
         """Initialize statistics variables and environment.
 
         :return: Response object or None
         :rtype: :class:`django.http.HttpResponse` or None
         """
-        # Checks conditions to start profiling the request
-        self.is_active = profiler.is_on and \
-                         hasattr(request, 'user') and \
-                         self.get_view_name(request) and \
-                         not self.match_exclude_urls(request.path)
+        self.is_active = self.can_process_request(request)
 
         if self.is_active:
             # Force DB connection to debug mode to get sql time and number of queries
@@ -85,21 +100,24 @@ class ProfilerMiddleware(object):
         :rtype: :class:`django.http.HttpResponse` or :class:`django.http.StreamingHttpResponse`
         """
         if self.is_active:
-            view_execution_time = default_timer() - self.start_time
+            if self.can_process_response(response):
+                view_execution_time = default_timer() - self.start_time
 
-            # Calculate the execution time and the number of queries.
-            # Exclude queries made before the call of our middleware (e.g. in SessionMiddleware).
-            sql_count = max(len(connection.queries) - self.existing_sql_count, 0)
-            sql_time = sum(float(q['time']) for q in islice(connection.queries, self.existing_sql_count, None))
+                # Calculate the execution time and the number of queries.
+                # Exclude queries made before the call of our middleware (e.g. in SessionMiddleware).
+                sql_count = max(len(connection.queries) - self.existing_sql_count, 0)
+                sql_time = sum(float(q['time']) for q in islice(connection.queries, self.existing_sql_count, None))
+
+                # Collects request and response params
+                view_name = self.get_view_name(request)
+                is_anon_call = request.user.is_anonymous() if callable(request.user.is_anonymous) else request.user.is_anonymous
+                is_cache_hit = getattr(response, speedinfo_settings.SPEEDINFO_CACHED_RESPONSE_ATTR_NAME, False)
+
+                # Saves profiler data
+                profiler.data.add(view_name, request.method, is_anon_call, is_cache_hit, sql_time, sql_count, view_execution_time)
+
+            # Rollback debug cursor value even if process response condition is disabled
             connection.force_debug_cursor = self.force_debug_cursor
-
-            # Collects request and response params
-            view_name = self.get_view_name(request)
-            is_anon_call = request.user.is_anonymous() if callable(request.user.is_anonymous) else request.user.is_anonymous
-            is_cache_hit = getattr(response, speedinfo_settings.SPEEDINFO_CACHED_RESPONSE_ATTR_NAME, False)
-
-            # Saves profiler data
-            profiler.data.add(view_name, request.method, is_anon_call, is_cache_hit, sql_time, sql_count, view_execution_time)
 
         return response
 

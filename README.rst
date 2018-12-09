@@ -54,15 +54,6 @@ to control profiler state. Press ``Reset`` button to reset all data.
 Configuration
 =============
 
-To exclude some urls from profiling add it to the ``SPEEDINFO_EXCLUDE_URLS`` list.
-``SpeedInfo`` uses re.match internally to test requested url. Example::
-
-    SPEEDINFO_EXCLUDE_URLS = [
-        r'/admin/',
-        r'/news/$',
-        r'/movie/\d+/$',
-    ]
-
 ``SpeedInfo`` automatically detects when using Django per-site caching via
 ``UpdateCacheMiddleware`` and ``FetchFromCacheMiddleware`` middlewares
 or per-view caching via ``cache_page`` decorator and counts cache hit
@@ -91,6 +82,32 @@ Default value::
         'view_name', 'method', 'anon_calls_ratio', 'cache_hits_ratio',
         'sql_count_per_call', 'sql_time_ratio', 'total_calls', 'time_per_call', 'total_time'
     )
+
+
+Profiling conditions
+====================
+
+``SPEEDINFO_PROFILING_CONDITIONS`` settings allows to declare a list of imported by path classes
+to define the conditions for profiling the processed view. By default, the only condition is enabled::
+
+    SPEEDINFO_PROFILING_CONDITIONS = [
+        'speedinfo.conditions.exclude_urls.ExcludeURLCondition',
+    ]
+
+
+``ExcludeURLCondition`` allows you to exclude some urls from profiling by adding them to
+the ``SPEEDINFO_EXCLUDE_URLS`` list. ``ExcludeURLCondition`` uses ``re.match`` internally to test
+requested url. Example::
+
+    SPEEDINFO_EXCLUDE_URLS = [
+        r'/admin/',
+        r'/news/$',
+        r'/movie/\d+/$',
+    ]
+
+
+To define your own condition class, you must inherit from the base class ``speedinfo.conditions.base.Condition``
+and implement all abstract methods. See ``ExcludeURLCondition`` source code for implementation example.
 
 
 Notice
