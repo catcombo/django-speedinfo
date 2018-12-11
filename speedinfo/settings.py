@@ -7,7 +7,11 @@ from django.db.models import ExpressionWrapper, F, FloatField, IntegerField
 ReportColumnFormat = namedtuple('ReportColumnFormat', ['name', 'format', 'attr_name', 'order_field'])
 
 DEFAULTS = {
+    'SPEEDINFO_TESTS': False,
     'SPEEDINFO_CACHED_RESPONSE_ATTR_NAME': 'is_cached',
+    'SPEEDINFO_PROFILING_CONDITIONS': [
+        'speedinfo.conditions.exclude_urls.ExcludeURLCondition',
+    ],
     'SPEEDINFO_EXCLUDE_URLS': [],
     'SPEEDINFO_REPORT_COLUMNS': (
         'view_name', 'method', 'anon_calls_ratio', 'cache_hits_ratio',

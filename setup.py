@@ -9,8 +9,8 @@ with open(join(dirname(__file__), 'README.rst')) as f:
 
 setup(
     name='django-speedinfo',
-    version='1.3.7',
-    packages=['speedinfo', 'speedinfo.migrations'],
+    version='1.4.0',
+    packages=['speedinfo', 'speedinfo.migrations', 'speedinfo.conditions'],
     include_package_data=True,
     license='MIT',
     description='Live profiling tool for Django framework to measure views performance',
@@ -19,7 +19,6 @@ setup(
     author='Evgeniy Krysanov',
     author_email='evgeniy.krysanov@gmail.com',
     classifiers=[
-        'Development Status :: 5 - Production/Stable',
         'Intended Audience :: Developers',
         'Environment :: Web Environment',
         'Framework :: Django',

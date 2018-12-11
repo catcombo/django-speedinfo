@@ -17,7 +17,7 @@ except ImportError:
     from django.core.urlresolvers import reverse
 
 
-@override_settings(SPEEDINFO_EXCLUDE_URLS=[])
+@override_settings(SPEEDINFO_EXCLUDE_URLS=[], SPEEDINFO_TESTS=True)
 class ProfilerTest(TestCase):
     def setUp(self):
         cache.clear()
@@ -159,7 +159,7 @@ class ProfilerTest(TestCase):
         self.assertFalse(ViewProfiler.objects.exists())
 
 
-@override_settings(SPEEDINFO_EXCLUDE_URLS=[reverse('func-view')])
+@override_settings(SPEEDINFO_EXCLUDE_URLS=[reverse('func-view')], SPEEDINFO_TESTS=True)
 class ExcludeURLConditionTest(TestCase):
     def setUp(self):
         cache.clear()
@@ -180,7 +180,7 @@ class ExcludeURLConditionTest(TestCase):
         self.assertTrue(ViewProfiler.objects.exists())
 
 
-@override_settings(SPEEDINFO_EXCLUDE_URLS=[reverse('admin:index')])
+@override_settings(SPEEDINFO_EXCLUDE_URLS=[reverse('admin:index')], SPEEDINFO_TESTS=True)
 class ProfilerAdminTest(TestCase):
     def setUp(self):
         cache.clear()
