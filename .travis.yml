@@ -12,7 +12,6 @@ services:
 
 before_install:
   - mysql -e 'CREATE DATABASE test_db;'
-  - export DJANGO_SETTINGS_MODULE=tests.test_settings
 
 env:
   - DJANGO_VERSION=1.8
