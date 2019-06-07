@@ -112,6 +112,15 @@ full path to your class to ``SPEEDINFO_PROFILING_CONDITIONS`` list as shown abov
 are executed in a top-down order. The first condition returning ``False`` interrupts the further check.
 
 
+Separate storage for data
+=========================
+
+If you want to use different database (e.g. Redis) to store ``django-speedinfo`` data:
+
+1. Define separate database in ``DATABASES`` option in the `project settings <https://docs.djangoproject.com/en/2.2/topics/db/multi-db/>`_.
+2. Configure `database router <https://docs.djangoproject.com/en/2.2/topics/db/multi-db/#automatic-database-routing>`_ to return appropriate database for ``speedinfo`` application (see an example in documentation).
+
+
 Notice
 ======
 
