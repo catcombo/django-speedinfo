@@ -35,9 +35,16 @@ class ProfilerMiddleware(object):
         :rtype: str or None
         """
         try:
-            return resolve(request.path)._func_path
+            resolver = resolve(request.path)
         except Resolver404:
             return None
+
+        if not hasattr(resolver.func, 'actions'):
+            return resolver._func_path
+
+        method_name = resolver.func.actions.values()[0]
+        view_name = '.'.join((resolver._func_path, method_name))
+        return view_name
 
     def can_process_request(self, request):
         """Checks conditions to start profiling the request
