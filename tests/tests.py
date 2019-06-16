@@ -4,6 +4,7 @@ import django
 
 from django.contrib.auth.models import User
 from django.core.cache import cache
+from django.core.checks import run_checks
 from django.test import TestCase, override_settings
 
 from speedinfo import profiler
@@ -18,6 +19,46 @@ if django.VERSION < (1, 10):
     MIDDLEWARE_SETTINGS_NAME = 'MIDDLEWARE_CLASSES'
 else:
     MIDDLEWARE_SETTINGS_NAME = 'MIDDLEWARE'
+
+
+class SystemChecksTestCase(TestCase):
+    def test_valid_middleware_config(self):
+        messages = run_checks()
+        self.assertEqual(messages, [])
+
+    def test_missing_middleware(self):
+        with self.settings(**{MIDDLEWARE_SETTINGS_NAME: []}):
+            messages = run_checks()
+            self.assertTrue(len(messages) > 0)
+            self.assertEqual(messages[0].id, 'speedinfo.W001')
+
+    def test_cache_middleware_position(self):
+        with self.settings(**{MIDDLEWARE_SETTINGS_NAME: [
+            'django.middleware.cache.FetchFromCacheMiddleware',
+            'speedinfo.middleware.ProfilerMiddleware',
+        ]}):
+            messages = run_checks()
+            self.assertTrue(len(messages) > 0)
+            self.assertEqual(messages[0].id, 'speedinfo.E001')
+
+    def test_multiple_middlewares(self):
+        with self.settings(**{MIDDLEWARE_SETTINGS_NAME: [
+            'speedinfo.middleware.ProfilerMiddleware',
+            'speedinfo.middleware.ProfilerMiddleware',
+        ]}):
+            messages = run_checks()
+            self.assertTrue(len(messages) > 0)
+            self.assertEqual(messages[0].id, 'speedinfo.E002')
+
+    def test_missing_cache_backend(self):
+        with self.settings(CACHES={
+            'default': {
+                'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+            }
+        }):
+            messages = run_checks()
+            self.assertTrue(len(messages) > 0)
+            self.assertEqual(messages[0].id, 'speedinfo.E003')
 
 
 @override_settings(SPEEDINFO_EXCLUDE_URLS=[], SPEEDINFO_TESTS=True)
