@@ -66,9 +66,9 @@ class ViewProfilerAdmin(admin.ModelAdmin):
         qs = super(ViewProfilerAdmin, self).get_queryset(request)
 
         for rc in speedinfo_settings.SPEEDINFO_REPORT_COLUMNS_FORMAT:
-            if (rc.attr_name in speedinfo_settings.SPEEDINFO_REPORT_COLUMNS) and not isinstance(rc.order_field, str):
+            if (rc.attr_name in speedinfo_settings.SPEEDINFO_REPORT_COLUMNS) and not isinstance(rc.expression, str):
                 qs = qs.annotate(**{
-                    rc.attr_name: rc.order_field
+                    rc.attr_name: rc.expression
                 })
 
         return qs

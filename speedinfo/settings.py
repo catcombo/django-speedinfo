@@ -4,7 +4,7 @@ from collections import namedtuple
 from django.conf import settings
 from django.db.models import ExpressionWrapper, F, FloatField, IntegerField
 
-ReportColumnFormat = namedtuple('ReportColumnFormat', ['name', 'format', 'attr_name', 'order_field'])
+ReportColumnFormat = namedtuple('ReportColumnFormat', ['name', 'format', 'attr_name', 'expression'])
 
 DEFAULTS = {
     'SPEEDINFO_TESTS': False,

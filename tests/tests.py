@@ -2,10 +2,9 @@
 
 import django
 
-from time import sleep
-
 from django.contrib.auth.models import User
 from django.core.cache import cache
+from django.core.checks import run_checks
 from django.test import TestCase, override_settings
 
 from speedinfo import profiler
@@ -15,6 +14,64 @@ try:
     from django.urls import reverse  # Django >= 1.10
 except ImportError:
     from django.core.urlresolvers import reverse
+
+if django.VERSION < (1, 10):
+    MIDDLEWARE_SETTINGS_NAME = 'MIDDLEWARE_CLASSES'
+else:
+    MIDDLEWARE_SETTINGS_NAME = 'MIDDLEWARE'
+
+
+class SystemChecksTestCase(TestCase):
+    def test_valid_middleware_config(self):
+        messages = run_checks()
+        self.assertEqual(messages, [])
+
+    def test_missing_middleware(self):
+        with self.settings(**{MIDDLEWARE_SETTINGS_NAME: [
+            'django.contrib.sessions.middleware.SessionMiddleware',
+            'django.middleware.common.CommonMiddleware',
+            'django.contrib.auth.middleware.AuthenticationMiddleware',
+            'django.contrib.messages.middleware.MessageMiddleware',
+        ]}):
+            messages = run_checks()
+            self.assertTrue(len(messages) > 0)
+            self.assertEqual(messages[0].id, 'speedinfo.W001')
+
+    def test_cache_middleware_position(self):
+        with self.settings(**{MIDDLEWARE_SETTINGS_NAME: [
+            'django.contrib.sessions.middleware.SessionMiddleware',
+            'django.middleware.common.CommonMiddleware',
+            'django.contrib.auth.middleware.AuthenticationMiddleware',
+            'django.contrib.messages.middleware.MessageMiddleware',
+            'django.middleware.cache.FetchFromCacheMiddleware',
+            'speedinfo.middleware.ProfilerMiddleware',
+        ]}):
+            messages = run_checks()
+            self.assertTrue(len(messages) > 0)
+            self.assertEqual(messages[0].id, 'speedinfo.E001')
+
+    def test_multiple_middlewares(self):
+        with self.settings(**{MIDDLEWARE_SETTINGS_NAME: [
+            'django.contrib.sessions.middleware.SessionMiddleware',
+            'django.middleware.common.CommonMiddleware',
+            'django.contrib.auth.middleware.AuthenticationMiddleware',
+            'django.contrib.messages.middleware.MessageMiddleware',
+            'speedinfo.middleware.ProfilerMiddleware',
+            'speedinfo.middleware.ProfilerMiddleware',
+        ]}):
+            messages = run_checks()
+            self.assertTrue(len(messages) > 0)
+            self.assertEqual(messages[0].id, 'speedinfo.E002')
+
+    def test_missing_cache_backend(self):
+        with self.settings(CACHES={
+            'default': {
+                'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+            }
+        }):
+            messages = run_checks()
+            self.assertTrue(len(messages) > 0)
+            self.assertEqual(messages[0].id, 'speedinfo.E003')
 
 
 @override_settings(SPEEDINFO_EXCLUDE_URLS=[], SPEEDINFO_TESTS=True)
@@ -115,19 +172,15 @@ class ProfilerTest(TestCase):
         data.refresh_from_db()
         self.assertEqual(data.cache_hits, 2)
 
-        # Wait for the cache timeout
-        sleep(3)
+        # Clear cache
+        cache.clear()
+
         self.client.get(self.cached_func_view_url)
         data.refresh_from_db()
         self.assertEqual(data.cache_hits, 2)
 
     def test_per_site_cache(self):
-        if django.VERSION < (1, 10):
-            middleware_settings_name = 'MIDDLEWARE_CLASSES'
-        else:
-            middleware_settings_name = 'MIDDLEWARE'
-
-        with self.modify_settings(**{middleware_settings_name: {
+        with self.modify_settings(**{MIDDLEWARE_SETTINGS_NAME: {
             'append': 'django.middleware.cache.FetchFromCacheMiddleware',
             'prepend': 'django.middleware.cache.UpdateCacheMiddleware',
         }}):
