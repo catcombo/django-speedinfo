@@ -7,12 +7,6 @@ python:
   - "3.6"
   - "3.7"
 
-services:
-  - mysql
-
-before_install:
-  - mysql -e 'CREATE DATABASE test_db;'
-
 env:
   - DJANGO_VERSION=1.8
   - DJANGO_VERSION=1.10
@@ -34,7 +28,6 @@ matrix:
 
 install:
   - pip install -q Django==$DJANGO_VERSION
-  - pip install mysqlclient
 
 script:
   - python manage.py test
