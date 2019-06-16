@@ -27,13 +27,22 @@ class SystemChecksTestCase(TestCase):
         self.assertEqual(messages, [])
 
     def test_missing_middleware(self):
-        with self.settings(**{MIDDLEWARE_SETTINGS_NAME: []}):
+        with self.settings(**{MIDDLEWARE_SETTINGS_NAME: [
+            'django.contrib.sessions.middleware.SessionMiddleware',
+            'django.middleware.common.CommonMiddleware',
+            'django.contrib.auth.middleware.AuthenticationMiddleware',
+            'django.contrib.messages.middleware.MessageMiddleware',
+        ]}):
             messages = run_checks()
             self.assertTrue(len(messages) > 0)
             self.assertEqual(messages[0].id, 'speedinfo.W001')
 
     def test_cache_middleware_position(self):
         with self.settings(**{MIDDLEWARE_SETTINGS_NAME: [
+            'django.contrib.sessions.middleware.SessionMiddleware',
+            'django.middleware.common.CommonMiddleware',
+            'django.contrib.auth.middleware.AuthenticationMiddleware',
+            'django.contrib.messages.middleware.MessageMiddleware',
             'django.middleware.cache.FetchFromCacheMiddleware',
             'speedinfo.middleware.ProfilerMiddleware',
         ]}):
@@ -43,6 +52,10 @@ class SystemChecksTestCase(TestCase):
 
     def test_multiple_middlewares(self):
         with self.settings(**{MIDDLEWARE_SETTINGS_NAME: [
+            'django.contrib.sessions.middleware.SessionMiddleware',
+            'django.middleware.common.CommonMiddleware',
+            'django.contrib.auth.middleware.AuthenticationMiddleware',
+            'django.contrib.messages.middleware.MessageMiddleware',
             'speedinfo.middleware.ProfilerMiddleware',
             'speedinfo.middleware.ProfilerMiddleware',
         ]}):
