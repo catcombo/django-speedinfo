@@ -2,8 +2,6 @@
 
 import django
 
-from time import sleep
-
 from django.contrib.auth.models import User
 from django.core.cache import cache
 from django.test import TestCase, override_settings
@@ -15,6 +13,11 @@ try:
     from django.urls import reverse  # Django >= 1.10
 except ImportError:
     from django.core.urlresolvers import reverse
+
+if django.VERSION < (1, 10):
+    MIDDLEWARE_SETTINGS_NAME = 'MIDDLEWARE_CLASSES'
+else:
+    MIDDLEWARE_SETTINGS_NAME = 'MIDDLEWARE'
 
 
 @override_settings(SPEEDINFO_EXCLUDE_URLS=[], SPEEDINFO_TESTS=True)
@@ -115,19 +118,15 @@ class ProfilerTest(TestCase):
         data.refresh_from_db()
         self.assertEqual(data.cache_hits, 2)
 
-        # Wait for the cache timeout
-        sleep(3)
+        # Clear cache
+        cache.clear()
+
         self.client.get(self.cached_func_view_url)
         data.refresh_from_db()
         self.assertEqual(data.cache_hits, 2)
 
     def test_per_site_cache(self):
-        if django.VERSION < (1, 10):
-            middleware_settings_name = 'MIDDLEWARE_CLASSES'
-        else:
-            middleware_settings_name = 'MIDDLEWARE'
-
-        with self.modify_settings(**{middleware_settings_name: {
+        with self.modify_settings(**{MIDDLEWARE_SETTINGS_NAME: {
             'append': 'django.middleware.cache.FetchFromCacheMiddleware',
             'prepend': 'django.middleware.cache.UpdateCacheMiddleware',
         }}):
