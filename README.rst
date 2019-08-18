@@ -7,7 +7,7 @@ django-speedinfo
     :target: https://travis-ci.org/catcombo/django-speedinfo
 
 SpeedInfo is a live profiling tool for the Django framework to find
-most highload views in your project for the next optimization.
+the most high loaded views in your project for the next optimization.
 SpeedInfo counts number of calls, cache hits, SQL queries,
 measures average and total call time and more for each of your views.
 Detailed report and profiler controls are available in Django admin.
@@ -59,9 +59,9 @@ Configuration
 or per-view caching via ``cache_page`` decorator and counts cache hit
 when retrieving page from cache.
 
-In case you implement your own caching logic and want to mark
-view response as obtained from the cache, set attribute with name taken
-from ``SPEEDINFO_CACHED_RESPONSE_ATTR_NAME`` to True to the ``HttpResponse`` object.
+If you implement your own caching logic and want to mark
+view response as obtained from a cache, add attribute to the ``HttpResponse`` object
+with the name from ``SPEEDINFO_CACHED_RESPONSE_ATTR_NAME`` and the value set to True.
 Example::
 
     from django.views import View
@@ -87,8 +87,8 @@ Default value::
 Profiling conditions
 ====================
 
-``SPEEDINFO_PROFILING_CONDITIONS`` setting allows to declare a list of imported by path classes
-to define the conditions for profiling the processed view. By default, the only condition is enabled::
+``SPEEDINFO_PROFILING_CONDITIONS`` setting allows to declare a list of imported classes
+to define the conditions for profiling a processed view. By default, the only condition is enabled::
 
     SPEEDINFO_PROFILING_CONDITIONS = [
         'speedinfo.conditions.exclude_urls.ExcludeURLCondition',
@@ -115,7 +115,7 @@ are executed in a top-down order. The first condition returning ``False`` interr
 Separate storage for data
 =========================
 
-If you want to use different database (e.g. Redis) to store ``django-speedinfo`` data:
+If you want to use different database to store ``django-speedinfo`` data:
 
 1. Define separate database in ``DATABASES`` option in the `project settings <https://docs.djangoproject.com/en/2.2/topics/db/multi-db/>`_.
 2. Configure `database router <https://docs.djangoproject.com/en/2.2/topics/db/multi-db/#automatic-database-routing>`_ to return appropriate database for ``speedinfo`` application (see an example in documentation).
@@ -125,7 +125,7 @@ Notice
 ======
 
 The number of SQL queries measured by ``django-speedinfo`` may differ from the values
-of ``django-debug-toolbar`` for the same view. First of all, because we show the average number
+of ``django-debug-toolbar`` for the same view. It happens because we show the average number
 of SQL queries for each view. Secondly, we don't take into account SQL queries
 made before the call of a view (e.g. in the preceding middlewares), as well SQL queries
-made after the call view.
+made after the view call.
