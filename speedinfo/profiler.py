@@ -4,11 +4,8 @@ from django.core.cache import cache
 from django.db import IntegrityError
 
 
-class ProfilerData(object):
-    """
-    Encapsulates work with the profiling data.
-    """
-    def add(self, view_name, method, is_anon_call, is_cache_hit, sql_time, sql_count, view_execution_time):
+class DatabaseStorage(object):
+    def save(self, view_name, method, is_anon_call, is_cache_hit, sql_time, sql_count, view_execution_time):
         """Adds profiling data.
 
         :param str view_name: View name
@@ -25,8 +22,8 @@ class ProfilerData(object):
         try:
             vp, created = ViewProfiler.objects.get_or_create(view_name=view_name, method=method)
         except IntegrityError:
-            # IntegrityError exception raised in case of concurrent access
-            # to get_or_create method from another webserver worker process
+            # IntegrityError raised in the case of concurrent access
+            # to get_or_create method from another application worker/thread
             vp = ViewProfiler.objects.get(view_name=view_name, method=method)
 
         ViewProfiler.objects.filter(pk=vp.pk).update(
@@ -38,7 +35,7 @@ class ProfilerData(object):
             total_time=F('total_time') + view_execution_time
         )
 
-    def reset(self):
+    def delete_all(self):
         """Deletes all profiling data"""
         from speedinfo.models import ViewProfiler
         ViewProfiler.objects.all().delete()
@@ -51,7 +48,7 @@ class Profiler(object):
     PROFILER_STATE_CACHE_KEY = 'speedinfo.profiler.is_on'
 
     def __init__(self):
-        self.data = ProfilerData()
+        self._storage = DatabaseStorage()
 
     @property
     def is_on(self):
@@ -69,3 +66,9 @@ class Profiler(object):
         :param bool value: State value
         """
         cache.set(self.PROFILER_STATE_CACHE_KEY, value, None)
+
+    def save(self, *args, **kwargs):
+        self._storage.save(*args, **kwargs)
+
+    def delete_all(self):
+        self._storage.delete_all()

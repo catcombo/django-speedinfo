@@ -24,7 +24,7 @@ except ImportError:
 
 def field_wrapper(col):
     """Helper function to dynamically create list display method
-    for :class:`ViewProfilerAdmin` to control value formating
+    for :class:`ViewProfilerAdmin` to control value formatting
     and sort order.
 
     :type col: :data:`settings.ReportColumnFormat`
@@ -51,7 +51,7 @@ class ViewProfilerAdmin(admin.ModelAdmin):
 
     def __init__(self, *args, **kwargs):
         """Initializes the list of visible columns and
-        the way they are formating the values.
+        the way they are formatting the values.
         """
         super(ViewProfilerAdmin, self).__init__(*args, **kwargs)
         self.list_display = []
@@ -125,7 +125,7 @@ class ViewProfilerAdmin(admin.ModelAdmin):
         return response
 
     def reset(self, request):
-        profiler.data.reset()
+        profiler.delete_all()
         return HttpResponseRedirect(reverse('admin:speedinfo_viewprofiler_changelist'))
 
 
