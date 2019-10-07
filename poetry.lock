@@ -1,0 +1,26 @@
+[[package]]
+category = "dev"
+description = "A high-level Python Web framework that encourages rapid development and clean, pragmatic design."
+name = "django"
+optional = false
+python-versions = "*"
+version = "1.11.25"
+
+[package.dependencies]
+pytz = "*"
+
+[[package]]
+category = "dev"
+description = "World timezone definitions, modern and historical"
+name = "pytz"
+optional = false
+python-versions = "*"
+version = "2019.3"
+
+[metadata]
+content-hash = "1c7f892cc4302170910d21f14ee4723000a410f23ac03b0dbbf71bc8374c1a64"
+python-versions = ">=2.7"
+
+[metadata.hashes]
+django = ["2f31cdaaeffdb1728614c4ede5f7101c5770aa90b471c1299d4a203bf00f3b05", "5314e8586285d532b7aa5c6d763b0248d9a977a37efec86d30f0212b82e8ef66"]
+pytz = ["1c557d7d0e871de1f5ccd5833f60fb2550652da6be2693c1e02300743d21500d", "b02c06db6cf09c12dd25137e563b31700d3b80fcc4ad23abb7a315f2789819be"]
