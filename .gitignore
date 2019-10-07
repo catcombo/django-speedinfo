@@ -1,6 +1,5 @@
 build/
 dist/
-*.egg-info/
+*.idea/
 *.pyc
 *.sqlite
-*.sqlite3
