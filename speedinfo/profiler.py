@@ -5,7 +5,7 @@ from django.db import IntegrityError
 
 
 class DatabaseStorage(object):
-    def save(self, view_name, method, is_anon_call, is_cache_hit, sql_time, sql_count, view_execution_time):
+    def create(self, view_name, method, is_anon_call, is_cache_hit, sql_time, sql_count, view_execution_time):
         """Adds profiling data.
 
         :param str view_name: View name
@@ -67,8 +67,8 @@ class Profiler(object):
         """
         cache.set(self.PROFILER_STATE_CACHE_KEY, value, None)
 
-    def save(self, *args, **kwargs):
-        self._storage.save(*args, **kwargs)
+    def create(self, *args, **kwargs):
+        self._storage.create(*args, **kwargs)
 
     def delete_all(self):
         self._storage.delete_all()
