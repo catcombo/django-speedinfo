@@ -33,6 +33,6 @@ def cached_func_view(request):
 
 
 def db_func_view(request):
-    User.objects.create_user(username='user', password='123456')
-    User.objects.get(username='user')
+    User.objects.create_user(username="user", password="123456")
+    User.objects.get(username="user")
     return HttpResponse()

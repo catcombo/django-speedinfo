@@ -42,11 +42,11 @@ def field_wrapper(col):
 class ViewProfilerAdmin(admin.ModelAdmin):
     list_display_links = None
     actions = None
-    ordering = ('-total_time',)
+    ordering = ("-total_time",)
 
     class Media:
         css = {
-            'all': ('speedinfo/css/admin.css',)
+            "all": ("speedinfo/css/admin.css",)
         }
 
     def __init__(self, *args, **kwargs):
@@ -58,7 +58,7 @@ class ViewProfilerAdmin(admin.ModelAdmin):
 
         for rc in speedinfo_settings.SPEEDINFO_REPORT_COLUMNS_FORMAT:
             if rc.attr_name in speedinfo_settings.SPEEDINFO_REPORT_COLUMNS:
-                method_name = '{}_wrapper'.format(rc.attr_name)
+                method_name = "{}_wrapper".format(rc.attr_name)
                 setattr(self, method_name, field_wrapper(rc))
                 self.list_display.append(method_name)
 
@@ -84,20 +84,20 @@ class ViewProfilerAdmin(admin.ModelAdmin):
 
     def changelist_view(self, request, extra_context=None):
         return super(ViewProfilerAdmin, self).changelist_view(request, extra_context={
-            'title': 'Views profiler',
-            'profiler_is_on': profiler.is_on,
+            "title": "Views profiler",
+            "profiler_is_on": profiler.is_on,
         })
 
     def get_urls(self):
         return [
-            url(r'^switch/$', self.admin_site.admin_view(self.switch), name='speedinfo-profiler-switch'),
-            url(r'^export/$', self.admin_site.admin_view(self.export), name='speedinfo-profiler-export'),
-            url(r'^reset/$', self.admin_site.admin_view(self.reset), name='speedinfo-profiler-reset'),
+            url(r"^switch/$", self.admin_site.admin_view(self.switch), name="speedinfo-profiler-switch"),
+            url(r"^export/$", self.admin_site.admin_view(self.export), name="speedinfo-profiler-export"),
+            url(r"^reset/$", self.admin_site.admin_view(self.reset), name="speedinfo-profiler-reset"),
         ] + super(ViewProfilerAdmin, self).get_urls()
 
     def switch(self, request):
         profiler.is_on = not profiler.is_on
-        return HttpResponseRedirect(reverse('admin:speedinfo_viewprofiler_changelist'))
+        return HttpResponseRedirect(reverse("admin:speedinfo_viewprofiler_changelist"))
 
     def export(self, request):
         """Exports profiling data as a comma-separated file.
@@ -119,14 +119,14 @@ class ViewProfilerAdmin(admin.ModelAdmin):
                 for col in export_columns
             ])
 
-        response = HttpResponse(output.getvalue(), content_type='text/csv')
-        response['Content-Disposition'] = 'attachment; filename=profiler.csv'
+        response = HttpResponse(output.getvalue(), content_type="text/csv")
+        response["Content-Disposition"] = "attachment; filename=profiler.csv"
 
         return response
 
     def reset(self, request):
         profiler.reset()
-        return HttpResponseRedirect(reverse('admin:speedinfo_viewprofiler_changelist'))
+        return HttpResponseRedirect(reverse("admin:speedinfo_viewprofiler_changelist"))
 
 
 admin.site.register(ViewProfiler, ViewProfilerAdmin)

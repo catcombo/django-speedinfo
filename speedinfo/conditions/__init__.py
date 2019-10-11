@@ -13,7 +13,7 @@ class ConditionsDispatcher:
         self.conditions = []
 
         for module_path in speedinfo_settings.SPEEDINFO_PROFILING_CONDITIONS:
-            path, class_name = module_path.rsplit('.', 1)
+            path, class_name = module_path.rsplit(".", 1)
 
             try:
                 module = import_module(path)
@@ -21,7 +21,7 @@ class ConditionsDispatcher:
                     getattr(module, class_name)()
                 )
             except (AttributeError, ImportError) as e:
-                msg = 'Could not import "{}". {}: {}.'.format(module_path, e.__class__.__name__, e)
+                msg = "Could not import '{}'. {}: {}.".format(module_path, e.__class__.__name__, e)
                 raise ImportError(msg)
 
     def get_conditions(self):

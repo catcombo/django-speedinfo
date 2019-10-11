@@ -46,7 +46,7 @@ class ProfilerMiddleware(object):
         :return: True if request can be processed
         :rtype: bool
         """
-        result = profiler.is_on and hasattr(request, 'user') and self.get_view_name(request)
+        result = profiler.is_on and hasattr(request, "user") and self.get_view_name(request)
 
         for condition in conditions_dispatcher.get_conditions():
             result = result and condition.process_request(request)
@@ -106,7 +106,7 @@ class ProfilerMiddleware(object):
                 # Calculate the execution time and the number of queries.
                 # Exclude queries made before the call of our middleware (e.g. in SessionMiddleware).
                 sql_count = max(len(connection.queries) - self.existing_sql_count, 0)
-                sql_time = sum(float(q['time']) for q in islice(connection.queries, self.existing_sql_count, None))
+                sql_time = sum(float(q["time"]) for q in islice(connection.queries, self.existing_sql_count, None))
 
                 # Collects request and response params
                 view_name = self.get_view_name(request)

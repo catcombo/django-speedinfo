@@ -23,12 +23,12 @@ class ViewProfilerManager(models.Manager):
             vp = self.get_queryset().get(view_name=view_name, method=method)
 
         self.get_queryset().filter(pk=vp.pk).update(
-            anon_calls=F('anon_calls') + (is_anon_call and 1 or 0),
-            cache_hits=F('cache_hits') + (is_cache_hit and 1 or 0),
-            sql_total_time=F('sql_total_time') + sql_time,
-            sql_total_count=F('sql_total_count') + sql_count,
-            total_calls=F('total_calls') + 1,
-            total_time=F('total_time') + view_execution_time
+            anon_calls=F("anon_calls") + (is_anon_call and 1 or 0),
+            cache_hits=F("cache_hits") + (is_cache_hit and 1 or 0),
+            sql_total_time=F("sql_total_time") + sql_time,
+            sql_total_count=F("sql_total_count") + sql_count,
+            total_calls=F("total_calls") + 1,
+            total_time=F("total_time") + view_execution_time
         )
 
     def reset(self):

@@ -7,7 +7,7 @@ class Profiler(object):
     """
     Profiler class to store its state and process the data.
     """
-    PROFILER_STATE_CACHE_KEY = 'speedinfo.profiler.is_on'
+    PROFILER_STATE_CACHE_KEY = "speedinfo.profiler.is_on"
 
     @property
     def is_on(self):
