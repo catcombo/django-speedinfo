@@ -4,6 +4,7 @@ from itertools import islice
 from timeit import default_timer
 
 from django.db import connection
+
 from speedinfo import profiler
 from speedinfo.conditions import conditions_dispatcher
 from speedinfo.settings import speedinfo_settings
@@ -110,11 +111,15 @@ class ProfilerMiddleware(object):
 
                 # Collects request and response params
                 view_name = self.get_view_name(request)
-                is_anon_call = request.user.is_anonymous() if callable(request.user.is_anonymous) else request.user.is_anonymous
+                is_anon_call = request.user.is_anonymous() if callable(request.user.is_anonymous) \
+                    else request.user.is_anonymous
                 is_cache_hit = getattr(response, speedinfo_settings.SPEEDINFO_CACHED_RESPONSE_ATTR_NAME, False)
 
                 # Saves profiler data
-                profiler.add(view_name, request.method, is_anon_call, is_cache_hit, sql_time, sql_count, view_execution_time)
+                profiler.add(
+                    view_name, request.method, is_anon_call, is_cache_hit,
+                    sql_time, sql_count, view_execution_time,
+                )
 
             # Rollback debug cursor value even if process response condition is disabled
             connection.force_debug_cursor = self.force_debug_cursor

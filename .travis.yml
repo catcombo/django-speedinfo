@@ -28,6 +28,8 @@ matrix:
 
 install:
   - pip install -q Django==$DJANGO_VERSION
+  - pip install flake8 flake8-quotes flake8-commas flake8-import-order
 
 script:
+  - flake8
   - python manage.py test

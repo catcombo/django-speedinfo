@@ -1,6 +1,7 @@
 # coding: utf-8
 
 from collections import namedtuple
+
 from django.conf import settings
 from django.db.models import ExpressionWrapper, F, FloatField, IntegerField
 
@@ -31,7 +32,7 @@ DEFAULTS = {
         ReportColumnFormat("Time per call", "{:.8f}", "time_per_call",
                            ExpressionWrapper(F("total_time") / F("total_calls"), output_field=FloatField())),
         ReportColumnFormat("Total time", "{:.4f}", "total_time", "total_time"),
-    ]
+    ],
 }
 
 

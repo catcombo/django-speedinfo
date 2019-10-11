@@ -1,7 +1,8 @@
 # coding: utf-8
 
-import django
 import os
+
+import django
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -57,7 +58,7 @@ DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.sqlite3",
         "NAME": "db.sqlite",
-    }
+    },
 }
 
 STATIC_URL = "/static/"
@@ -66,5 +67,5 @@ CACHES = {
     "default": {
         "BACKEND": "speedinfo.backends.proxy_cache",
         "CACHE_BACKEND": "django.core.cache.backends.locmem.LocMemCache",
-    }
+    },
 }

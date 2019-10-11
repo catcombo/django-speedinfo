@@ -4,8 +4,8 @@ from time import sleep
 
 from django.contrib.auth.models import User
 from django.http import HttpResponse
-from django.views.generic import View
 from django.views.decorators.cache import cache_page
+from django.views.generic import View
 
 from speedinfo.settings import speedinfo_settings
 

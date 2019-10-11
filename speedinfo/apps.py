@@ -1,9 +1,9 @@
 # coding: utf-8
 
 import django
+from django.apps import AppConfig
 from django.conf import settings
 from django.core.checks import Error, Warning, register
-from django.apps import AppConfig
 
 if django.VERSION < (1, 10):
     MIDDLEWARE_SETTINGS_NAME = "MIDDLEWARE_CLASSES"
@@ -30,7 +30,7 @@ def check_middleware(app_configs, **kwargs):
                 "speedinfo.middleware.ProfilerMiddleware is missing from %s" % MIDDLEWARE_SETTINGS_NAME,
                 hint="Add speedinfo.middleware.ProfilerMiddleware to %s" % MIDDLEWARE_SETTINGS_NAME,
                 id="speedinfo.W001",
-            )
+            ),
         )
 
     elif (cache_middleware_index is not None) and (profiler_middleware_index > cache_middleware_index):
@@ -41,7 +41,7 @@ def check_middleware(app_configs, **kwargs):
                 hint="Move speedinfo.middleware.ProfilerMiddleware to before "
                      "django.middleware.cache.FetchFromCacheMiddleware in %s" % MIDDLEWARE_SETTINGS_NAME,
                 id="speedinfo.E001",
-            )
+            ),
         )
 
     elif profiler_middleware_multiple:
@@ -50,7 +50,7 @@ def check_middleware(app_configs, **kwargs):
                 "speedinfo.middleware.ProfilerMiddleware occurs multiple times in %s" % MIDDLEWARE_SETTINGS_NAME,
                 hint="Add speedinfo.middleware.ProfilerMiddleware only once in %s" % MIDDLEWARE_SETTINGS_NAME,
                 id="speedinfo.E002",
-            )
+            ),
         )
 
     return errors
@@ -66,7 +66,7 @@ def check_cache_backend(app_configs, **kwargs):
             "speedinfo.backends.proxy_cache is missing from CACHES",
             hint="Add speedinfo.backends.proxy_cache to CACHES",
             id="speedinfo.E003",
-        )
+        ),
     ]
 
 

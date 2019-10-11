@@ -10,7 +10,7 @@ except ImportError:
 from django.conf.urls import url
 from django.contrib import admin
 from django.core.exceptions import PermissionDenied
-from django.http import HttpResponseRedirect, HttpResponse
+from django.http import HttpResponse, HttpResponseRedirect
 
 from speedinfo import profiler
 from speedinfo.models import ViewProfiler
@@ -46,7 +46,7 @@ class ViewProfilerAdmin(admin.ModelAdmin):
 
     class Media:
         css = {
-            "all": ("speedinfo/css/admin.css",)
+            "all": ("speedinfo/css/admin.css",),
         }
 
     def __init__(self, *args, **kwargs):
@@ -68,7 +68,7 @@ class ViewProfilerAdmin(admin.ModelAdmin):
         for rc in speedinfo_settings.SPEEDINFO_REPORT_COLUMNS_FORMAT:
             if (rc.attr_name in speedinfo_settings.SPEEDINFO_REPORT_COLUMNS) and not isinstance(rc.expression, str):
                 qs = qs.annotate(**{
-                    rc.attr_name: rc.expression
+                    rc.attr_name: rc.expression,
                 })
 
         return qs

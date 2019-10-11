@@ -27,10 +27,14 @@ classifiers = [
 ]
 
 [tool.poetry.dependencies]
-python = ">=2.7"
+python = "^2.7"
 
 [tool.poetry.dev-dependencies]
 django = "^1.8"
+flake8 = "^3.7"
+flake8-quotes = "^2.1"
+flake8-commas = "^2"
+flake8-import-order = "^0.18"
 
 [build-system]
 requires = ["poetry>=0.12"]

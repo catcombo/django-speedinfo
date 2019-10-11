@@ -18,7 +18,7 @@ class ConditionsDispatcher:
             try:
                 module = import_module(path)
                 self.conditions.append(
-                    getattr(module, class_name)()
+                    getattr(module, class_name)(),
                 )
             except (AttributeError, ImportError) as e:
                 msg = "Could not import '{}'. {}: {}.".format(module_path, e.__class__.__name__, e)

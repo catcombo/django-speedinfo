@@ -1,4 +1,6 @@
-from django.db import models, IntegrityError
+# coding: utf-8
+
+from django.db import IntegrityError, models
 from django.db.models import F
 
 
@@ -28,7 +30,7 @@ class ViewProfilerManager(models.Manager):
             sql_total_time=F("sql_total_time") + sql_time,
             sql_total_count=F("sql_total_count") + sql_count,
             total_calls=F("total_calls") + 1,
-            total_time=F("total_time") + view_execution_time
+            total_time=F("total_time") + view_execution_time,
         )
 
     def reset(self):

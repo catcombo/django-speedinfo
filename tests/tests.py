@@ -1,7 +1,6 @@
 # coding: utf-8
 
 import django
-
 from django.contrib.auth.models import User
 from django.core.cache import cache
 from django.core.checks import run_checks
@@ -67,7 +66,7 @@ class SystemChecksTestCase(TestCase):
         with self.settings(CACHES={
             "default": {
                 "BACKEND": "django.core.cache.backends.locmem.LocMemCache",
-            }
+            },
         }):
             messages = run_checks()
             self.assertTrue(len(messages) > 0)
@@ -249,7 +248,7 @@ class ProfilerAdminTest(TestCase):
             sql_total_time=1,
             sql_total_count=6,
             total_time=2,
-            total_calls=2
+            total_calls=2,
         )
 
     def test_switch(self):
@@ -266,8 +265,12 @@ class ProfilerAdminTest(TestCase):
         self.assertEquals(response.get("Content-Disposition"), "attachment; filename=profiler.csv")
 
         output = response.content.decode()
-        self.assertEqual(output, "View name,HTTP method,Anonymous calls,Cache hits,SQL queries per call,SQL time,Total calls,Time per call,Total time\r\n"
-                                 "app.view_name,GET,100.0%,50.0%,3,50.0%,2,1.00000000,2.0000\r\n")
+        self.assertEqual(
+            output,
+            "View name,HTTP method,Anonymous calls,Cache hits,SQL queries per call,"
+            "SQL time,Total calls,Time per call,Total time\r\n"
+            "app.view_name,GET,100.0%,50.0%,3,50.0%,2,1.00000000,2.0000\r\n",
+        )
 
     @override_settings(SPEEDINFO_REPORT_COLUMNS=("view_name", "method", "total_calls", "time_per_call", "total_time"))
     def test_custom_columns_export(self):
