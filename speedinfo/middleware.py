@@ -114,7 +114,7 @@ class ProfilerMiddleware(object):
                 is_cache_hit = getattr(response, speedinfo_settings.SPEEDINFO_CACHED_RESPONSE_ATTR_NAME, False)
 
                 # Saves profiler data
-                profiler.create(view_name, request.method, is_anon_call, is_cache_hit, sql_time, sql_count, view_execution_time)
+                profiler.add(view_name, request.method, is_anon_call, is_cache_hit, sql_time, sql_count, view_execution_time)
 
             # Rollback debug cursor value even if process response condition is disabled
             connection.force_debug_cursor = self.force_debug_cursor

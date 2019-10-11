@@ -208,7 +208,7 @@ class ProfilerTest(TestCase):
         self.client.get(self.func_view_url)
         self.assertEqual(ViewProfiler.objects.count(), 2)
 
-        profiler.delete_all()
+        profiler.reset()
         self.assertFalse(ViewProfiler.objects.exists())
 
 

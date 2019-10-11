@@ -125,7 +125,7 @@ class ViewProfilerAdmin(admin.ModelAdmin):
         return response
 
     def reset(self, request):
-        profiler.delete_all()
+        profiler.reset()
         return HttpResponseRedirect(reverse('admin:speedinfo_viewprofiler_changelist'))
 
 

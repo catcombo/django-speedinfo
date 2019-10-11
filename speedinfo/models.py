@@ -2,6 +2,8 @@
 
 from django.db import models
 
+from speedinfo.managers import ViewProfilerManager
+
 
 class ViewProfiler(models.Model):
     """
@@ -15,6 +17,8 @@ class ViewProfiler(models.Model):
     sql_total_count = models.PositiveIntegerField('SQL total queries count', default=0)
     total_calls = models.PositiveIntegerField('Total calls', default=0)
     total_time = models.FloatField('Total time', default=0)
+
+    objects = ViewProfilerManager()
 
     class Meta:
         verbose_name_plural = 'Views'
