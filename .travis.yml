@@ -32,4 +32,4 @@ install:
 
 script:
   - flake8
-  - python manage.py test
+  - python runtests.py
