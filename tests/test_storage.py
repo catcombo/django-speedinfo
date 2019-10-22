@@ -1,8 +1,7 @@
 # coding: utf-8
 
-from django.core.management import call_command
 from django.forms import model_to_dict
-from django.test import TestCase, modify_settings, override_settings
+from django.test import TestCase, override_settings
 
 from speedinfo.conf import speedinfo_settings
 from speedinfo.models import ViewProfiler
@@ -118,12 +117,6 @@ class CacheStorageTestCase(StorageTestCase, TestCase):
     pass
 
 
-@modify_settings(INSTALLED_APPS={
-    "append": "speedinfo.storage.database",
-})
 @override_settings(SPEEDINFO_STORAGE="speedinfo.storage.database.storage.DatabaseStorage", SPEEDINFO_TESTS=True)
 class DatabaseStorageTestCase(StorageTestCase, TestCase):
-    @classmethod
-    def setUpClass(cls):
-        super(DatabaseStorageTestCase, cls).setUpClass()
-        call_command("migrate", verbosity=0)
+    pass

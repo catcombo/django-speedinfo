@@ -20,6 +20,7 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
 
     "speedinfo",
+    "speedinfo.storage.database",
 ]
 
 MIDDLEWARE = [
