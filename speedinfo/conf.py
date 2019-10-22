@@ -14,10 +14,6 @@ DEFAULTS = {
     "SPEEDINFO_PROFILING_CONDITIONS": [],
     "SPEEDINFO_EXCLUDE_URLS": [],
     "SPEEDINFO_REPORT_COLUMNS": (
-        "view_name", "method", "anon_calls_ratio", "cache_hits_ratio",
-        "sql_count_per_call", "sql_time_ratio", "total_calls", "time_per_call", "total_time",
-    ),
-    "SPEEDINFO_REPORT_COLUMNS_FORMAT": [
         ReportColumnFormat("View name", "{}", "view_name"),
         ReportColumnFormat("HTTP method", "{}", "method"),
         ReportColumnFormat("Anonymous calls", "{:.1f}%", "anon_calls_ratio"),
@@ -27,7 +23,7 @@ DEFAULTS = {
         ReportColumnFormat("Total calls", "{}", "total_calls"),
         ReportColumnFormat("Time per call", "{:.8f}", "time_per_call"),
         ReportColumnFormat("Total time", "{:.4f}", "total_time"),
-    ],
+    ),
 }
 
 

@@ -56,11 +56,10 @@ class ViewProfilerAdmin(admin.ModelAdmin):
         super(ViewProfilerAdmin, self).__init__(*args, **kwargs)
         self.list_display = []
 
-        for rc in speedinfo_settings.SPEEDINFO_REPORT_COLUMNS_FORMAT:
-            if rc.attr_name in speedinfo_settings.SPEEDINFO_REPORT_COLUMNS:
-                method_name = "{}_wrapper".format(rc.attr_name)
-                setattr(self, method_name, field_wrapper(rc))
-                self.list_display.append(method_name)
+        for rc in speedinfo_settings.SPEEDINFO_REPORT_COLUMNS:
+            method_name = "{}_wrapper".format(rc.attr_name)
+            setattr(self, method_name, field_wrapper(rc))
+            self.list_display.append(method_name)
 
     def change_view(self, *args, **kwargs):
         raise PermissionDenied
@@ -96,16 +95,13 @@ class ViewProfilerAdmin(admin.ModelAdmin):
         :rtype: :class:`django.http.HttpResponse`
         """
         output = StringIO()
-        export_columns = list(filter(lambda col: col.attr_name in speedinfo_settings.SPEEDINFO_REPORT_COLUMNS,
-                                     speedinfo_settings.SPEEDINFO_REPORT_COLUMNS_FORMAT))
-
         csv_writer = csv.writer(output)
-        csv_writer.writerow([col.name for col in export_columns])
+        csv_writer.writerow([col.name for col in speedinfo_settings.SPEEDINFO_REPORT_COLUMNS])
 
         for row in self.get_queryset(request):
             csv_writer.writerow([
                 col.format.format(getattr(row, col.attr_name))
-                for col in export_columns
+                for col in speedinfo_settings.SPEEDINFO_REPORT_COLUMNS
             ])
 
         response = HttpResponse(output.getvalue(), content_type="text/csv")

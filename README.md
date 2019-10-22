@@ -24,8 +24,8 @@ pip install django-speedinfo
 - `SPEEDINFO_PROFILING_CONDITIONS` is empty by default. If you use `SPEEDINFO_EXCLUDE_URLS` in your
   project you need to initialize the list of conditions explicitly:
   `SPEEDINFO_PROFILING_CONDITIONS = ["speedinfo.conditions.exclude_urls.ExcludeURLCondition"]`
-- `SPEEDINFO_REPORT_COLUMNS_FORMAT` is no longer provides the ability to add new columns and
-  customize their appearance
+- `SPEEDINFO_REPORT_COLUMNS_FORMAT` is removed, use `SPEEDINFO_REPORT_COLUMNS` instead
+- `expression` field was removed from `ReportColumnFormat`
 - `speedinfo.settings` module renamed to `speedinfo.conf`
 - Base condition class was renamed from `Condition` to `AbstractCondition`
 
@@ -115,12 +115,23 @@ But you can override it if the attribute name is conflicts with your application
 
 ## Customize admin columns
 
-`SPEEDINFO_REPORT_COLUMNS` allows to control visibility and display order of Django admin
-profiler columns. Default value:
+`SPEEDINFO_REPORT_COLUMNS` allows to control visibility and appearance of Django admin
+profiler columns. Every entry in the `SPEEDINFO_REPORT_COLUMNS` list is a `ReportColumnFormat`
+instance describing column name, value formatting and `ViewProfiler` attribute name
+where the value taken from. Default value:
 ```
+from speedinfo.conf import ReportColumnFormat
+
 SPEEDINFO_REPORT_COLUMNS = (
-    "view_name", "method", "anon_calls_ratio", "cache_hits_ratio",
-    "sql_count_per_call", "sql_time_ratio", "total_calls", "time_per_call", "total_time",
+    ReportColumnFormat("View name", "{}", "view_name"),
+    ReportColumnFormat("HTTP method", "{}", "method"),
+    ReportColumnFormat("Anonymous calls", "{:.1f}%", "anon_calls_ratio"),
+    ReportColumnFormat("Cache hits", "{:.1f}%", "cache_hits_ratio"),
+    ReportColumnFormat("SQL queries per call", "{}", "sql_count_per_call"),
+    ReportColumnFormat("SQL time", "{:.1f}%", "sql_time_ratio"),
+    ReportColumnFormat("Total calls", "{}", "total_calls"),
+    ReportColumnFormat("Time per call", "{:.8f}", "time_per_call"),
+    ReportColumnFormat("Total time", "{:.4f}", "total_time"),
 )
 ```
 
