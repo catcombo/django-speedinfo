@@ -13,8 +13,8 @@ from django.core.exceptions import PermissionDenied
 from django.http import HttpResponse, HttpResponseRedirect
 
 from speedinfo import profiler
+from speedinfo.conf import speedinfo_settings
 from speedinfo.models import ViewProfiler
-from speedinfo.settings import speedinfo_settings
 
 try:
     from django.urls import reverse  # Django >= 1.10
@@ -61,17 +61,6 @@ class ViewProfilerAdmin(admin.ModelAdmin):
                 method_name = "{}_wrapper".format(rc.attr_name)
                 setattr(self, method_name, field_wrapper(rc))
                 self.list_display.append(method_name)
-
-    def get_queryset(self, request):
-        qs = super(ViewProfilerAdmin, self).get_queryset(request)
-
-        for rc in speedinfo_settings.SPEEDINFO_REPORT_COLUMNS_FORMAT:
-            if (rc.attr_name in speedinfo_settings.SPEEDINFO_REPORT_COLUMNS) and not isinstance(rc.expression, str):
-                qs = qs.annotate(**{
-                    rc.attr_name: rc.expression,
-                })
-
-        return qs
 
     def change_view(self, *args, **kwargs):
         raise PermissionDenied
@@ -125,7 +114,7 @@ class ViewProfilerAdmin(admin.ModelAdmin):
         return response
 
     def reset(self, request):
-        profiler.reset()
+        profiler.storage.reset()
         return HttpResponseRedirect(reverse("admin:speedinfo_viewprofiler_changelist"))
 
 

@@ -9,7 +9,7 @@ docstring-quotes = double
 
 # flake8-import-order
 import-order-style = pycharm
-application-import-names = speedinfo
+application-import-names = speedinfo,tests
 
 exclude =
     .git,

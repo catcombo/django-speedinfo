@@ -69,3 +69,5 @@ CACHES = {
         "CACHE_BACKEND": "django.core.cache.backends.locmem.LocMemCache",
     },
 }
+
+SPEEDINFO_STORAGE = "speedinfo.storage.cache.storage.CacheStorage"

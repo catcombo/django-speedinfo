@@ -5,6 +5,8 @@ from django.apps import AppConfig
 from django.conf import settings
 from django.core.checks import Error, Warning, register
 
+from speedinfo.utils import import_class
+
 if django.VERSION < (1, 10):
     MIDDLEWARE_SETTINGS_NAME = "MIDDLEWARE_CLASSES"
 else:
@@ -70,9 +72,34 @@ def check_cache_backend(app_configs, **kwargs):
     ]
 
 
+def check_storage(app_configs, **kwargs):
+    if not getattr(settings, "SPEEDINFO_STORAGE", None):
+        return [
+            Error(
+                "SPEEDINFO_STORAGE is None or missing from the settings",
+                hint="Assign a dotted module path to one of available storage classes to the SPEEDINFO_STORAGE",
+                id="speedinfo.E004",
+            ),
+        ]
+
+    try:
+        import_class(settings.SPEEDINFO_STORAGE)
+    except ImportError:
+        return [
+            Error(
+                "Could not import class by path in SPEEDINFO_STORAGE",
+                hint="Ensure that module and class at specified path is importable",
+                id="speedinfo.E005",
+            ),
+        ]
+    else:
+        return []
+
+
 class SpeedinfoConfig(AppConfig):
     name = "speedinfo"
 
     def ready(self):
         register()(check_middleware)
         register()(check_cache_backend)
+        register()(check_storage)

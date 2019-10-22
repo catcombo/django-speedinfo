@@ -6,8 +6,8 @@ from timeit import default_timer
 from django.db import connection
 
 from speedinfo import profiler
-from speedinfo.conditions import conditions_dispatcher
-from speedinfo.settings import speedinfo_settings
+from speedinfo.conditions.dispatcher import conditions_dispatcher
+from speedinfo.conf import speedinfo_settings
 
 try:
     from django.urls import resolve, Resolver404  # Django >= 1.10
@@ -47,15 +47,15 @@ class ProfilerMiddleware(object):
         :return: True if request can be processed
         :rtype: bool
         """
-        result = profiler.is_on and hasattr(request, "user") and self.get_view_name(request)
+        ok = profiler.is_on and self.get_view_name(request)
 
         for condition in conditions_dispatcher.get_conditions():
-            result = result and condition.process_request(request)
+            ok = ok and condition.process_request(request)
 
-            if not result:
+            if not ok:
                 break
 
-        return result
+        return ok
 
     def can_process_response(self, response):
         """Checks conditions to finish profiling the request
@@ -64,17 +64,17 @@ class ProfilerMiddleware(object):
         :return: True if request can be processed
         :rtype: bool
         """
-        result = True
+        ok = True
 
         for condition in conditions_dispatcher.get_conditions():
-            result = result and condition.process_response(response)
+            ok = ok and condition.process_response(response)
 
-            if not result:
+            if not ok:
                 break
 
-        return result
+        return ok
 
-    def process_view(self, request, *args, **kwargs):
+    def process_request(self, request):
         """Initialize statistics variables and environment.
 
         :return: Response object or None
@@ -111,14 +111,20 @@ class ProfilerMiddleware(object):
 
                 # Collects request and response params
                 view_name = self.get_view_name(request)
-                is_anon_call = request.user.is_anonymous() if callable(request.user.is_anonymous) \
-                    else request.user.is_anonymous
                 is_cache_hit = getattr(response, speedinfo_settings.SPEEDINFO_CACHED_RESPONSE_ATTR_NAME, False)
 
+                if not hasattr(request, "user"):
+                    is_anon_call = True
+                else:
+                    if callable(request.user.is_anonymous):
+                        is_anon_call = request.user.is_anonymous()
+                    else:
+                        is_anon_call = request.user.is_anonymous
+
                 # Saves profiler data
-                profiler.add(
-                    view_name, request.method, is_anon_call, is_cache_hit,
-                    sql_time, sql_count, view_execution_time,
+                profiler.storage.add(
+                    view_name=view_name, method=request.method, is_anon_call=is_anon_call, is_cache_hit=is_cache_hit,
+                    sql_time=sql_time, sql_count=sql_count, view_execution_time=view_execution_time,
                 )
 
             # Rollback debug cursor value even if process response condition is disabled
@@ -134,7 +140,7 @@ class ProfilerMiddleware(object):
         :return: View response
         :rtype: :class:`django.http.HttpResponse` or :class:`django.http.StreamingHttpResponse`
         """
-        response = self.process_view(request)
+        response = self.process_request(request)
 
         if response is None:
             response = self.get_response(request)

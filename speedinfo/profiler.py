@@ -2,12 +2,18 @@
 
 from django.core.cache import cache
 
+from speedinfo.conf import speedinfo_settings
+from speedinfo.utils import import_class
+
 
 class Profiler(object):
     """
-    Profiler class to store its state and process the data.
+    Used to store profiler state and storage.
     """
     PROFILER_STATE_CACHE_KEY = "speedinfo.profiler.is_on"
+
+    def __init__(self):
+        self._storage = None
 
     @property
     def is_on(self):
@@ -26,10 +32,14 @@ class Profiler(object):
         """
         cache.set(self.PROFILER_STATE_CACHE_KEY, value, None)
 
-    def add(self, *args, **kwargs):
-        from speedinfo.models import ViewProfiler
-        ViewProfiler.objects.add(*args, **kwargs)
+    @property
+    def storage(self):
+        """Returns profiler storage.
 
-    def reset(self):
-        from speedinfo.models import ViewProfiler
-        ViewProfiler.objects.reset()
+        :return: storage instance
+        :rtype: :class:`speedinfo.storage.base.AbstractStorage`
+        """
+        if self._storage is None:
+            self._storage = import_class(speedinfo_settings.SPEEDINFO_STORAGE)()
+
+        return self._storage

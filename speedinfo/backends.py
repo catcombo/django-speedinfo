@@ -3,7 +3,7 @@
 from django.core.cache import InvalidCacheBackendError
 from django.utils.module_loading import import_string
 
-from speedinfo.settings import speedinfo_settings
+from speedinfo.conf import speedinfo_settings
 
 
 def proxy_cache(location, params):

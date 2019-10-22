@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "speedinfo"
-version = "1.4.1"
+version = "2.0.0"
 description = "Live profiling tool for Django framework to measure views performance"
 authors = ["Evgeniy Krysanov <evgeniy.krysanov@gmail.com>"]
 license = "MIT"
@@ -30,11 +30,12 @@ classifiers = [
 python = "^2.7"
 
 [tool.poetry.dev-dependencies]
-django = "^1.8"
+django = "~1.8"
 flake8 = "^3.7"
 flake8-quotes = "^2.1"
 flake8-commas = "^2"
 flake8-import-order = "^0.18"
+mock = "^3.0"
 
 [build-system]
 requires = ["poetry>=0.12"]
