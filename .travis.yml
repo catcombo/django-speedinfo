@@ -35,5 +35,5 @@ install:
   - pip install -U Django~=$DJANGO_VERSION
 
 script:
-  - flake8
-  - python runtests.py
+  - poetry run flake8
+  - poetry run runtests.py
