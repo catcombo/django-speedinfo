@@ -1,6 +1,7 @@
 # django-speedinfo
 
 [![Build Status](https://travis-ci.org/catcombo/django-speedinfo.svg?branch=master)](https://travis-ci.org/catcombo/django-speedinfo)
+[![Coverage Status](https://coveralls.io/repos/github/catcombo/django-speedinfo/badge.svg?branch=master)](https://coveralls.io/github/catcombo/django-speedinfo?branch=master)
 
 `django-speedinfo` is a live profiling tool for Django projects to find
 the most high loaded views for the next optimization. `django-speedinfo` counts
