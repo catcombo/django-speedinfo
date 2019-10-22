@@ -63,7 +63,7 @@ class ViewProfilerAdminTestCase(TestCase):
         ("Total time", "{:.2f}", "total_time"),
     ))
     @mock.patch("speedinfo.managers.profiler")
-    def test_custom_columns_export(self, profiler_mock):
+    def test_partial_export(self, profiler_mock):
         profiler_mock.storage.fetch_all.return_value = [
             ViewProfiler(
                 view_name="app.view_name", method="GET", anon_calls=8, cache_hits=3,
