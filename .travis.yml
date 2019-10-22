@@ -15,10 +15,6 @@ env:
   - DJANGO_VERSION=2.1
   - DJANGO_VERSION=2.2
 
-before_install:
-  - curl -sSL https://raw.githubusercontent.com/sdispater/poetry/master/get-poetry.py | python
-  - source "$HOME/.poetry/env"
-
 matrix:
   exclude:
     - python: "2.7"
@@ -31,8 +27,8 @@ matrix:
       env: DJANGO_VERSION=1.11
 
 install:
-  - poetry install
-  - pip install -U Django==$DJANGO_VERSION.*
+  - pip install -q Django==$DJANGO_VERSION
+  - pip install -q flake8 flake8-quotes flake8-commas flake8-import-order mock
 
 script:
   - flake8
