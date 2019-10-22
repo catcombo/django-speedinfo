@@ -4,7 +4,7 @@ from django.conf import settings
 
 DEFAULTS = {
     "SPEEDINFO_TESTS": False,
-    "SPEEDINFO_CACHED_RESPONSE_ATTR_NAME": "is_cached",
+    "SPEEDINFO_CACHED_RESPONSE_ATTR_NAME": "_is_cached",
     "SPEEDINFO_STORAGE": None,
     "SPEEDINFO_CACHE_STORAGE_CACHE_ALIAS": "default",
     "SPEEDINFO_PROFILING_CONDITIONS": [],
