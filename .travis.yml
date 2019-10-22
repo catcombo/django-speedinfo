@@ -32,7 +32,7 @@ matrix:
 
 install:
   - poetry install
-  - pip install -U "$DJANGO_VERSION"
+  - pip install -U Django~=$DJANGO_VERSION
 
 script:
   - flake8
