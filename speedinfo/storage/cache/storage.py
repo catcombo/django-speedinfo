@@ -1,5 +1,7 @@
 # coding: utf-8
 
+from functools import cmp_to_key
+
 from django.core.cache import caches
 
 from speedinfo.conf import speedinfo_settings
@@ -92,7 +94,7 @@ class CacheStorage(AbstractStorage):
             for field in ordering or []
         ]
 
-        return sorted(results, cmp=comparator(order_fields))
+        return sorted(results, key=cmp_to_key(comparator(order_fields)))
 
     def reset(self):
         self._cache.delete_many(self.indexes() + [self.CACHE_INDEXES_KEY])
