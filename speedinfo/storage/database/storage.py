@@ -18,14 +18,13 @@ class DatabaseStorage(AbstractStorage):
             # to get_or_create method from another application worker/thread
             vp = Storage.objects.get(view_name=view_name, method=method)
 
-        Storage.objects.filter(pk=vp.pk).update(
-            anon_calls=F("anon_calls") + (is_anon_call and 1 or 0),
-            cache_hits=F("cache_hits") + (is_cache_hit and 1 or 0),
-            sql_total_time=F("sql_total_time") + sql_time,
-            sql_total_count=F("sql_total_count") + sql_count,
-            total_calls=F("total_calls") + 1,
-            total_time=F("total_time") + view_execution_time,
-        )
+        vp.anon_calls = F("anon_calls") + (is_anon_call and 1 or 0)
+        vp.cache_hits = F("cache_hits") + (is_cache_hit and 1 or 0)
+        vp.sql_total_time = F("sql_total_time") + sql_time
+        vp.sql_total_count = F("sql_total_count") + sql_count
+        vp.total_calls = F("total_calls") + 1
+        vp.total_time = F("total_time") + view_execution_time
+        vp.save()
 
     def fetch_all(self, ordering=None):
         qs = Storage.objects.annotate(
