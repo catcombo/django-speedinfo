@@ -8,12 +8,12 @@ python:
   - "3.7"
 
 env:
-  - DJANGO_VERSION=1.8
-  - DJANGO_VERSION=1.10
-  - DJANGO_VERSION=1.11
-  - DJANGO_VERSION=2.0
-  - DJANGO_VERSION=2.1
-  - DJANGO_VERSION=2.2
+  - DJANGO_VERSION=1.8.*
+  - DJANGO_VERSION=1.10.*
+  - DJANGO_VERSION=1.11.*
+  - DJANGO_VERSION=2.0.*
+  - DJANGO_VERSION=2.1.*
+  - DJANGO_VERSION=2.2.*
 
 before_install:
   - curl -sSL https://raw.githubusercontent.com/sdispater/poetry/master/get-poetry.py | python
@@ -32,8 +32,8 @@ matrix:
 
 install:
   - poetry install
-  - pip install -U Django~=$DJANGO_VERSION
+  - pip install -U Django==$DJANGO_VERSION
 
 script:
-  - poetry run flake8
-  - poetry run runtests.py
+  - flake8
+  - python runtests.py
