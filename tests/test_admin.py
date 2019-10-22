@@ -4,7 +4,6 @@ import mock
 from django.contrib.auth.models import User
 from django.test import TestCase, override_settings
 
-from speedinfo.conf import ReportColumnFormat
 from speedinfo.models import ViewProfiler
 
 try:
@@ -56,12 +55,12 @@ class ViewProfilerAdminTestCase(TestCase):
             "app.view_name,GET,80.0%,30.0%,2,80.0%,10,5.00000000,50.0000\r\n",
         )
 
-    @override_settings(SPEEDINFO_REPORT_COLUMNS=(
-        ReportColumnFormat("View name", "{}", "view_name"),
-        ReportColumnFormat("HTTP method", "{}", "method"),
-        ReportColumnFormat("Total calls", "{}", "total_calls"),
-        ReportColumnFormat("Time per call", "{:.4f}", "time_per_call"),
-        ReportColumnFormat("Total time", "{:.2f}", "total_time"),
+    @override_settings(SPEEDINFO_ADMIN_COLUMNS=(
+        ("View name", "{}", "view_name"),
+        ("HTTP method", "{}", "method"),
+        ("Total calls", "{}", "total_calls"),
+        ("Time per call", "{:.4f}", "time_per_call"),
+        ("Total time", "{:.2f}", "total_time"),
     ))
     @mock.patch("speedinfo.managers.profiler")
     def test_custom_columns_export(self, profiler_mock):

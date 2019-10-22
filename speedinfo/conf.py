@@ -1,10 +1,6 @@
 # coding: utf-8
 
-from collections import namedtuple
-
 from django.conf import settings
-
-ReportColumnFormat = namedtuple("ReportColumnFormat", ["name", "format", "attr_name"])
 
 DEFAULTS = {
     "SPEEDINFO_TESTS": False,
@@ -13,16 +9,16 @@ DEFAULTS = {
     "SPEEDINFO_CACHE_STORAGE_CACHE_ALIAS": "default",
     "SPEEDINFO_PROFILING_CONDITIONS": [],
     "SPEEDINFO_EXCLUDE_URLS": [],
-    "SPEEDINFO_REPORT_COLUMNS": (
-        ReportColumnFormat("View name", "{}", "view_name"),
-        ReportColumnFormat("HTTP method", "{}", "method"),
-        ReportColumnFormat("Anonymous calls", "{:.1f}%", "anon_calls_ratio"),
-        ReportColumnFormat("Cache hits", "{:.1f}%", "cache_hits_ratio"),
-        ReportColumnFormat("SQL queries per call", "{}", "sql_count_per_call"),
-        ReportColumnFormat("SQL time", "{:.1f}%", "sql_time_ratio"),
-        ReportColumnFormat("Total calls", "{}", "total_calls"),
-        ReportColumnFormat("Time per call", "{:.8f}", "time_per_call"),
-        ReportColumnFormat("Total time", "{:.4f}", "total_time"),
+    "SPEEDINFO_ADMIN_COLUMNS": (
+        ("View name", "{}", "view_name"),
+        ("HTTP method", "{}", "method"),
+        ("Anonymous calls", "{:.1f}%", "anon_calls_ratio"),
+        ("Cache hits", "{:.1f}%", "cache_hits_ratio"),
+        ("SQL queries per call", "{}", "sql_count_per_call"),
+        ("SQL time", "{:.1f}%", "sql_time_ratio"),
+        ("Total calls", "{}", "total_calls"),
+        ("Time per call", "{:.8f}", "time_per_call"),
+        ("Total time", "{:.4f}", "total_time"),
     ),
 }
 

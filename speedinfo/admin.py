@@ -27,14 +27,14 @@ def field_wrapper(col):
     for :class:`ViewProfilerAdmin` to control value formatting
     and sort order.
 
-    :type col: :data:`settings.ReportColumnFormat`
+    :type col: tuple(str, str, str)
     :rtype: function
     """
     def field_format(obj):
-        return col.format.format(getattr(obj, col.attr_name))
+        return col[1].format(getattr(obj, col[2]))
 
-    field_format.short_description = col.name
-    field_format.admin_order_field = col.attr_name
+    field_format.short_description = col[0]
+    field_format.admin_order_field = col[2]
 
     return field_format
 
@@ -56,8 +56,8 @@ class ViewProfilerAdmin(admin.ModelAdmin):
         super(ViewProfilerAdmin, self).__init__(*args, **kwargs)
         self.list_display = []
 
-        for rc in speedinfo_settings.SPEEDINFO_REPORT_COLUMNS:
-            method_name = "{}_wrapper".format(rc.attr_name)
+        for rc in speedinfo_settings.SPEEDINFO_ADMIN_COLUMNS:
+            method_name = "{}_wrapper".format(rc[2])
             setattr(self, method_name, field_wrapper(rc))
             self.list_display.append(method_name)
 
@@ -96,12 +96,12 @@ class ViewProfilerAdmin(admin.ModelAdmin):
         """
         output = StringIO()
         csv_writer = csv.writer(output)
-        csv_writer.writerow([col.name for col in speedinfo_settings.SPEEDINFO_REPORT_COLUMNS])
+        csv_writer.writerow([col[0] for col in speedinfo_settings.SPEEDINFO_ADMIN_COLUMNS])
 
         for row in self.get_queryset(request):
             csv_writer.writerow([
-                col.format.format(getattr(row, col.attr_name))
-                for col in speedinfo_settings.SPEEDINFO_REPORT_COLUMNS
+                col[1].format(getattr(row, col[2]))
+                for col in speedinfo_settings.SPEEDINFO_ADMIN_COLUMNS
             ])
 
         response = HttpResponse(output.getvalue(), content_type="text/csv")
