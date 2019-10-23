@@ -33,8 +33,7 @@ install:
 
 script:
   - flake8
-  - python runtests.py
+  - coverage run --source=speedinfo runtests.py
 
 after_success:
-  - coverage run runtests.py
   - coveralls
