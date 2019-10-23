@@ -86,7 +86,11 @@ class StorageTestCase(object):
         entries = self.storage.fetch_all(ordering=["sql_count_per_call"])
         self.assertEqual(entries[0].view_name, "view1")
 
-        entries = self.storage.fetch_all(ordering=["-sql_count_per_call", "total_time"])
+        entries = self.storage.fetch_all(ordering=[
+            "-sql_count_per_call", "total_time", "view_name", "method", "anon_calls", "cache_hits",
+            "sql_total_time", "sql_total_count", "total_calls", "anon_calls_ratio", "cache_hits_ratio",
+            "sql_time_ratio", "time_per_call",
+        ])
         self.assertEqual(entries[0].view_name, "view2")
 
     def test_reset(self):
