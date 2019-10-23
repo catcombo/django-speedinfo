@@ -1,5 +1,5 @@
 [tool.poetry]
-name = "speedinfo"
+name = "django-speedinfo"
 version = "2.0.0"
 description = "Live profiling tool for Django framework to measure views performance"
 authors = ["Evgeniy Krysanov <evgeniy.krysanov@gmail.com>"]
@@ -24,6 +24,9 @@ classifiers = [
     "Programming Language :: Python :: 2.7",
     "Programming Language :: Python :: 3.6",
     "Programming Language :: Python :: 3.7",
+]
+packages = [
+    { include = "speedinfo" },
 ]
 
 [tool.poetry.dependencies]
