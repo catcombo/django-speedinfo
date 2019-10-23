@@ -26,8 +26,9 @@ pip install django-speedinfo
 
 # Upgrading from 1.x
 
-- Old profiling data will be lost after upgrading. Don't forget to export the data in advance.
-- Setup one of the storage backends as shown in the section 4 of `Setup` below.
+Old profiling data will be unavailable after upgrading. Don't forget to export the data in advance.
+
+- Setup one of the storage backends as shown in the section 4 of [Setup](#setup) below.
 - `SPEEDINFO_PROFILING_CONDITIONS` is empty by default. If you use `SPEEDINFO_EXCLUDE_URLS` in your
   project you need to initialize the list of conditions explicitly:
   `SPEEDINFO_PROFILING_CONDITIONS = ["speedinfo.conditions.exclude_urls.ExcludeURLCondition"]`
