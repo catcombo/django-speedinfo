@@ -12,6 +12,12 @@ available in Django admin.
 ![Speedinfo admin screenshot](https://github.com/catcombo/django-speedinfo/raw/master/screenshots/main.png)
 
 
+# Prerequisites
+
+- Python 2.7, 3.6+
+- Django 1.8+
+
+
 # Installation
 
 ```
