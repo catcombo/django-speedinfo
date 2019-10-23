@@ -26,6 +26,14 @@ class ViewProfilerAdminTestCase(TestCase):
         self.client.login(username="admin", password="123456")
 
     @mock.patch("speedinfo.admin.profiler")
+    def test_admin_index(self, profiler_mock):
+        profiler_mock.storage.fetch_all.return_value = [
+            ViewProfiler(view_name="app.view_name", method="GET", total_calls=2, total_time=5),
+        ]
+        response = self.client.get(reverse("admin:speedinfo_viewprofiler_changelist"))
+        self.assertEqual(response.status_code, 200)
+
+    @mock.patch("speedinfo.admin.profiler")
     def test_switch(self, profiler_mock):
         profiler_mock.is_on = False
         self.client.get(reverse("admin:speedinfo-profiler-switch"))
