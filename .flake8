@@ -1,0 +1,20 @@
+[flake8]
+statistics = True
+max-line-length = 120
+
+# flake8-quotes
+inline-quotes = double
+multiline-quotes = double
+docstring-quotes = double
+
+# flake8-import-order
+import-order-style = pycharm
+application-import-names = speedinfo,tests
+
+exclude =
+    .git,
+    __pycache__,
+    */migrations/*,
+    manage.py,
+    .cache,
+    .venv

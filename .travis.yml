@@ -28,6 +28,12 @@ matrix:
 
 install:
   - pip install -q Django==$DJANGO_VERSION
+  - pip install -q -U flake8 flake8-quotes flake8-commas flake8-import-order mock
+  - pip install coveralls
 
 script:
-  - python manage.py test
+  - flake8
+  - python runtests.py
+
+after_success:
+  - coveralls

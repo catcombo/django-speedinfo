@@ -10,11 +10,11 @@ except ImportError:
 from django.conf.urls import url
 from django.contrib import admin
 from django.core.exceptions import PermissionDenied
-from django.http import HttpResponseRedirect, HttpResponse
+from django.http import HttpResponse, HttpResponseRedirect
 
 from speedinfo import profiler
+from speedinfo.conf import speedinfo_settings
 from speedinfo.models import ViewProfiler
-from speedinfo.settings import speedinfo_settings
 
 try:
     from django.urls import reverse  # Django >= 1.10
@@ -24,17 +24,17 @@ except ImportError:
 
 def field_wrapper(col):
     """Helper function to dynamically create list display method
-    for :class:`ViewProfilerAdmin` to control value formating
+    for :class:`ViewProfilerAdmin` to control value formatting
     and sort order.
 
-    :type col: :data:`settings.ReportColumnFormat`
+    :type col: tuple(str, str, str)
     :rtype: function
     """
     def field_format(obj):
-        return col.format.format(getattr(obj, col.attr_name))
+        return col[1].format(getattr(obj, col[2]))
 
-    field_format.short_description = col.name
-    field_format.admin_order_field = col.attr_name
+    field_format.short_description = col[0]
+    field_format.admin_order_field = col[2]
 
     return field_format
 
@@ -42,36 +42,24 @@ def field_wrapper(col):
 class ViewProfilerAdmin(admin.ModelAdmin):
     list_display_links = None
     actions = None
-    ordering = ('-total_time',)
+    ordering = ("-total_time",)
 
     class Media:
         css = {
-            'all': ('speedinfo/css/admin.css',)
+            "all": ("speedinfo/css/admin.css",),
         }
 
     def __init__(self, *args, **kwargs):
         """Initializes the list of visible columns and
-        the way they are formating the values.
+        the way they are formatting the values.
         """
         super(ViewProfilerAdmin, self).__init__(*args, **kwargs)
         self.list_display = []
 
-        for rc in speedinfo_settings.SPEEDINFO_REPORT_COLUMNS_FORMAT:
-            if rc.attr_name in speedinfo_settings.SPEEDINFO_REPORT_COLUMNS:
-                method_name = '{}_wrapper'.format(rc.attr_name)
-                setattr(self, method_name, field_wrapper(rc))
-                self.list_display.append(method_name)
-
-    def get_queryset(self, request):
-        qs = super(ViewProfilerAdmin, self).get_queryset(request)
-
-        for rc in speedinfo_settings.SPEEDINFO_REPORT_COLUMNS_FORMAT:
-            if (rc.attr_name in speedinfo_settings.SPEEDINFO_REPORT_COLUMNS) and not isinstance(rc.expression, str):
-                qs = qs.annotate(**{
-                    rc.attr_name: rc.expression
-                })
-
-        return qs
+        for rc in speedinfo_settings.SPEEDINFO_ADMIN_COLUMNS:
+            method_name = "{}_wrapper".format(rc[2])
+            setattr(self, method_name, field_wrapper(rc))
+            self.list_display.append(method_name)
 
     def change_view(self, *args, **kwargs):
         raise PermissionDenied
@@ -84,20 +72,20 @@ class ViewProfilerAdmin(admin.ModelAdmin):
 
     def changelist_view(self, request, extra_context=None):
         return super(ViewProfilerAdmin, self).changelist_view(request, extra_context={
-            'title': 'Views profiler',
-            'profiler_is_on': profiler.is_on,
+            "title": "Views profiler",
+            "profiler_is_on": profiler.is_on,
         })
 
     def get_urls(self):
         return [
-            url(r'^switch/$', self.admin_site.admin_view(self.switch), name='speedinfo-profiler-switch'),
-            url(r'^export/$', self.admin_site.admin_view(self.export), name='speedinfo-profiler-export'),
-            url(r'^reset/$', self.admin_site.admin_view(self.reset), name='speedinfo-profiler-reset'),
+            url(r"^switch/$", self.admin_site.admin_view(self.switch), name="speedinfo-profiler-switch"),
+            url(r"^export/$", self.admin_site.admin_view(self.export), name="speedinfo-profiler-export"),
+            url(r"^reset/$", self.admin_site.admin_view(self.reset), name="speedinfo-profiler-reset"),
         ] + super(ViewProfilerAdmin, self).get_urls()
 
     def switch(self, request):
         profiler.is_on = not profiler.is_on
-        return HttpResponseRedirect(reverse('admin:speedinfo_viewprofiler_changelist'))
+        return HttpResponseRedirect(reverse("admin:speedinfo_viewprofiler_changelist"))
 
     def export(self, request):
         """Exports profiling data as a comma-separated file.
@@ -107,26 +95,23 @@ class ViewProfilerAdmin(admin.ModelAdmin):
         :rtype: :class:`django.http.HttpResponse`
         """
         output = StringIO()
-        export_columns = list(filter(lambda col: col.attr_name in speedinfo_settings.SPEEDINFO_REPORT_COLUMNS,
-                                     speedinfo_settings.SPEEDINFO_REPORT_COLUMNS_FORMAT))
-
         csv_writer = csv.writer(output)
-        csv_writer.writerow([col.name for col in export_columns])
+        csv_writer.writerow([col[0] for col in speedinfo_settings.SPEEDINFO_ADMIN_COLUMNS])
 
         for row in self.get_queryset(request):
             csv_writer.writerow([
-                col.format.format(getattr(row, col.attr_name))
-                for col in export_columns
+                col[1].format(getattr(row, col[2]))
+                for col in speedinfo_settings.SPEEDINFO_ADMIN_COLUMNS
             ])
 
-        response = HttpResponse(output.getvalue(), content_type='text/csv')
-        response['Content-Disposition'] = 'attachment; filename=profiler.csv'
+        response = HttpResponse(output.getvalue(), content_type="text/csv")
+        response["Content-Disposition"] = "attachment; filename=profiler.csv"
 
         return response
 
     def reset(self, request):
-        profiler.data.reset()
-        return HttpResponseRedirect(reverse('admin:speedinfo_viewprofiler_changelist'))
+        profiler.storage.reset()
+        return HttpResponseRedirect(reverse("admin:speedinfo_viewprofiler_changelist"))
 
 
 admin.site.register(ViewProfiler, ViewProfilerAdmin)

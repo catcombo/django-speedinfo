@@ -2,14 +2,15 @@
 
 import re
 
-from speedinfo.conditions.base import Condition
-from speedinfo.settings import speedinfo_settings
+from speedinfo.conditions.base import AbstractCondition
+from speedinfo.conf import speedinfo_settings
 
 
-class ExcludeURLCondition(Condition):
+class ExcludeURLCondition(AbstractCondition):
     """
-    Plugin for conditional profiling based on the list of
-    urls specified in SPEEDINFO_EXCLUDE_URLS settings
+    Condition allows to exclude some urls from profiling by adding them
+    to the SPEEDINFO_EXCLUDE_URLS list (default is empty). Each entry in
+    SPEEDINFO_EXCLUDE_URLS is a regex compatible expression to test requested url.
     """
     def __init__(self):
         self.patterns = None
@@ -21,7 +22,7 @@ class ExcludeURLCondition(Condition):
         return self.patterns
 
     def process_request(self, request):
-        """Checks requested page url against the list of excluded urls.
+        """Checks requested url against the list of excluded urls.
 
         :type request: :class:`django.http.HttpRequest`
         :return: False if path matches to any of the exclude urls
