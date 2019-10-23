@@ -36,4 +36,5 @@ script:
   - python runtests.py
 
 after_success:
+  - coverage run runtests.py
   - coveralls
