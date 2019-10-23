@@ -18,3 +18,7 @@ class ModelTestCase(TestCase):
 
         self.assertListEqual(list(ViewProfiler.objects.all()), results)
         self.assertListEqual(list(ViewProfiler.objects.order_by("-total_time")), results)
+
+    def test_extra_fields(self):
+        vp = ViewProfiler(extra="Value")
+        self.assertEqual(getattr(vp, "extra", None), "Value")

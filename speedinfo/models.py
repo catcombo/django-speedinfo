@@ -8,8 +8,8 @@ from speedinfo.managers import ViewProfilerQuerySet
 class ViewProfiler(models.Model):
     """
     Model doesn't have associated table in the database.
-    So don't try to use it as ordinary ORM model. You should
-    think of it as dataclass. Model is used for wrapping
+    So don't try to use it as an ordinary ORM model. You should
+    think of it as a dataclass. Model is used for wrapping
     storage data and Django admin integration.
     """
     view_name = models.CharField("View name", max_length=255)
@@ -26,6 +26,23 @@ class ViewProfiler(models.Model):
     class Meta:
         verbose_name_plural = "Views"
         managed = False
+
+    def __init__(self, *args, **kwargs):
+        # Extract extra fields from parameters
+        extra_fields = {}
+        model_field_names = [field.attname for field in self._meta.get_fields()]
+
+        for field_name in list(kwargs):
+            if field_name not in model_field_names:
+                extra_fields[field_name] = kwargs.pop(field_name)
+
+        super(ViewProfiler, self).__init__(*args, **kwargs)
+
+        # Assign extra fields to the object if the field names
+        # do not override existing fields
+        for field_name, value in extra_fields.items():
+            if not getattr(self, field_name, None):
+                setattr(self, field_name, value)
 
     @property
     def anon_calls_ratio(self):

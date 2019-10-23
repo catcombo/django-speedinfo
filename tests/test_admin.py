@@ -86,3 +86,35 @@ class ViewProfilerAdminTestCase(TestCase):
             "View name,HTTP method,Total calls,Time per call,Total time\r\n"
             "app.view_name,GET,10,5.0000,50.00\r\n",
         )
+
+    @override_settings(SPEEDINFO_ADMIN_COLUMNS=(
+        ("View name", "{}", "view_name"),
+        ("HTTP method", "{}", "method"),
+        ("Extra", "{}", "extra"),
+    ))
+    @mock.patch("speedinfo.admin.profiler")
+    def test_extra_columns_admin_index(self, profiler_mock):
+        profiler_mock.storage.fetch_all.return_value = [
+            ViewProfiler(view_name="app.view_name", method="GET", extra="Value"),
+        ]
+        response = self.client.get(reverse("admin:speedinfo_viewprofiler_changelist"))
+        self.assertEqual(response.status_code, 200)
+
+    @override_settings(SPEEDINFO_ADMIN_COLUMNS=(
+        ("View name", "{}", "view_name"),
+        ("HTTP method", "{}", "method"),
+        ("Extra", "{}", "extra"),
+    ))
+    @mock.patch("speedinfo.managers.profiler")
+    def test_extra_columns_export(self, profiler_mock):
+        profiler_mock.storage.fetch_all.return_value = [
+            ViewProfiler(view_name="app.view_name", method="GET", extra="Value"),
+        ]
+        response = self.client.get(reverse("admin:speedinfo-profiler-export"))
+        output = response.content.decode()
+
+        self.assertEqual(
+            output,
+            "View name,HTTP method,Extra\r\n"
+            "app.view_name,GET,Value\r\n",
+        )

@@ -33,6 +33,8 @@ pip install django-speedinfo
   `SPEEDINFO_PROFILING_CONDITIONS = ["speedinfo.conditions.exclude_urls.ExcludeURLCondition"]`
 - `SPEEDINFO_REPORT_COLUMNS` and `SPEEDINFO_REPORT_COLUMNS_FORMAT` were removed, use `SPEEDINFO_ADMIN_COLUMNS` instead.
   Every entry in `SPEEDINFO_ADMIN_COLUMNS` list is a tuple (column name, value format, attribute name).
+  See [Customize admin columns](#customize-admin-columns) for details. To add extra columns
+  follow the instruction in the section [Extra admin columns](#extra-admin-columns) below.
 - `speedinfo.settings` module renamed to `speedinfo.conf`
 - Base condition class was renamed from `Condition` to `AbstractCondition`
 
@@ -138,6 +140,26 @@ SPEEDINFO_ADMIN_COLUMNS = (
     ("Total time", "{:.4f}", "total_time"),
 )
 ```
+
+## Extra admin columns
+
+To add additional data to a storage and columns to admin follow the instruction:
+
+1. Create [custom storage backend](#custom-storage-backend) which will hold or calculate
+   additional fields.
+2. Implement storage `fetch_all()` method that will return the list of the `ViewProfiler`
+   instances initialized with the extra fields. Example:
+   ```
+   def fetch_all(self, ordering=None):
+       ...
+       return [
+           ViewProfiler(view_name="...", method="...", ..., extra_field="...")
+           ...
+       ]
+   ```
+3. Implement sorting by extra fields in `fetch_all()` method.
+4. Add extra fields to `SPEEDINFO_ADMIN_COLUMNS` as described in the section
+   [Customize admin columns](#customize-admin-columns).
 
 ## Profiling conditions
 
