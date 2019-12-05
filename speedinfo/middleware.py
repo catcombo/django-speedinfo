@@ -1,9 +1,9 @@
 # coding: utf-8
 
-from itertools import islice
 from timeit import default_timer
 
-from django.db import connection
+from django.conf import settings
+from django.db import connections
 
 from speedinfo import profiler
 from speedinfo.conditions.dispatcher import conditions_dispatcher
@@ -23,9 +23,9 @@ class ProfilerMiddleware(object):
     def __init__(self, get_response=None):
         self.get_response = get_response
         self.is_active = False
-        self.force_debug_cursor = False
         self.start_time = 0
-        self.existing_sql_count = 0
+        self.initial_sql_count = 0
+        self.initial_sql_time = 0
 
     def get_view_name(self, request):
         """Returns full view name from request, eg. 'app.module.view_name'.
@@ -83,11 +83,12 @@ class ProfilerMiddleware(object):
         self.is_active = self.can_process_request(request)
 
         if self.is_active:
-            # Force DB connection to debug mode to get sql time and number of queries
-            self.force_debug_cursor = connection.force_debug_cursor
-            connection.force_debug_cursor = True
+            # Force DB connection to debug mode to get SQL time and number of SQL queries
+            for conn in connections.all():
+                conn.force_debug_cursor = True
+                self.initial_sql_count += len(conn.queries)
+                self.initial_sql_time += sum(float(q["time"]) for q in conn.queries)
 
-            self.existing_sql_count = len(connection.queries)
             self.start_time = default_timer()
 
     def process_response(self, request, response):
@@ -104,10 +105,16 @@ class ProfilerMiddleware(object):
             if self.can_process_response(response):
                 view_execution_time = default_timer() - self.start_time
 
-                # Calculate the execution time and the number of queries.
+                # Calculate the execution time and the number of SQL queries.
                 # Exclude queries made before the call of our middleware (e.g. in SessionMiddleware).
-                sql_count = max(len(connection.queries) - self.existing_sql_count, 0)
-                sql_time = sum(float(q["time"]) for q in islice(connection.queries, self.existing_sql_count, None))
+                sql_count = sum([
+                    len(conn.queries) for conn in connections.all()
+                ]) - self.initial_sql_count
+
+                sql_time = sum([
+                    sum(float(q["time"]) for q in conn.queries)
+                    for conn in connections.all()
+                ]) - self.initial_sql_time
 
                 # Collects request and response params
                 view_name = self.get_view_name(request)
@@ -127,8 +134,11 @@ class ProfilerMiddleware(object):
                     sql_time=sql_time, sql_count=sql_count, view_execution_time=view_execution_time,
                 )
 
-            # Rollback debug cursor value even if process response condition is disabled
-            connection.force_debug_cursor = self.force_debug_cursor
+            # Disable debug cursor and clear queries log if DEBUG is False
+            if not settings.DEBUG:
+                for conn in connections.all():
+                    conn.force_debug_cursor = False
+                    conn.queries_log.clear()
 
         return response
 

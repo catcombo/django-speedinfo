@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "django-speedinfo"
-version = "2.0.0"
+version = "2.0.1"
 description = "Live profiling tool for Django framework to measure views performance"
 authors = ["Evgeniy Krysanov <evgeniy.krysanov@gmail.com>"]
 license = "MIT"
