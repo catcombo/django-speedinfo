@@ -24,8 +24,8 @@ matrix:
       env: DJANGO_VERSION=2.1
     - python: "2.7"
       env: DJANGO_VERSION=2.2
-    - python: "2.7"
-      env: DJANGO_VERSION=3.0
+    - python: "3.7"
+      env: DJANGO_VERSION=1.11
 
 install:
   - pip install -q Django==$DJANGO_VERSION
@@ -33,7 +33,7 @@ install:
   - pip install coveralls
 
 script:
-  - flake8 speedinfo
+  - flake8
   - coverage run --source=speedinfo runtests.py
 
 after_success:
