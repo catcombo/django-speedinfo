@@ -33,7 +33,7 @@ install:
   - pip install coveralls
 
 script:
-  - flake8
+  - flake8 speedinfo
   - coverage run --source=speedinfo runtests.py
 
 after_success:
