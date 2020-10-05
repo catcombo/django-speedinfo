@@ -83,6 +83,9 @@ class ProfilerMiddleware(object):
         self.is_active = self.can_process_request(request)
 
         if self.is_active:
+            self.initial_sql_count = 0
+            self.initial_sql_time = 0
+
             # Force DB connection to debug mode to get SQL time and number of SQL queries
             for conn in connections.all():
                 conn.force_debug_cursor = True
